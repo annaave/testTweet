@@ -1,13 +1,11 @@
-#New new new test
 import tweepy
 import pandas as pd
 import time
 
-
-consumer_key = "XXXXX"
-consumer_secret = "XXXX"
-access_token = "XXXX"
-access_token_secret = "XXXXX"
+consumer_key = "xxxxx"
+consumer_secret = "xxxxx"
+access_token = "xxxxx"
+access_token_secret = "xxxxx"
 
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -20,15 +18,15 @@ api = tweepy.API(auth, wait_on_rate_limit=True)
 #except:
 #    print("Error during authentication")
 
-def print_tweets(file, count):
+def print_tweets(file, count, newFile):
     id_tweet = []
     list_tweets = []
     data = pd.read_csv(file)
 
     # Removing duplicates of Twitter IDs in the CSV file.
-    print("Rows of data before delted dupltes:", data.size)
+    print("Rows of data before duplicated rows deleted:", data.size)
     data.drop_duplicates(subset="TweetID", keep=False, inplace=True)
-    print("Rows of data before delted dupltes:", data.size)
+    print("Rows of data before duplicated rows deleted:", data.size)
 
     #for i in range(count):
      #   id_tweet.append(data["TweetID"].iloc[i])
@@ -55,6 +53,8 @@ def print_tweets(file, count):
     for i in range(len(list_tweets)):
         print("Tweet:", list_tweets[i])
 
+    df = pd.DataFrame(list_tweets)
+    df.to_csv(newFile, index=False)
 #def clean_tweets(tweets):
  #   tweet.text = tweet.text.split(' ',1)[1]
   #  print(tweet.text)
@@ -84,11 +84,11 @@ def replies_tweet(name, tweet_id, number):
         print("Reply:", replies[i])
 
 def main():
-    print("Swedish tweets:")
-    print_tweets("Swedish_Twitter_sentiment.csv", 5)
+    print("Portuguese tweets:")
+    print_tweets("Portuguese_Twitter_sentiment.csv", 50, "new_Port_tweets.csv")
 
-    print("English tweets:")
-    print_tweets("English_Twitter_sentiment.csv", 5)
+    #print("English tweets:")
+    #print_tweets("English_Twitter_sentiment.csv", 5)
 
 
 if __name__ == "__main__":
