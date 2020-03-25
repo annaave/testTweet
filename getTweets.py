@@ -25,9 +25,9 @@ def print_tweets(file, count):
     data = pd.read_csv(file)
 
     # Removing duplicates of Twitter IDs in the CSV file.
-    print("Datarader innan dubletter är raderade:", data.size)
+    print("Rows of data before delted dupltes:", data.size)
     data.drop_duplicates(subset="TweetID", keep=False, inplace=True)
-    print("Datarader efter dubletter är raderade:", data.size)
+    print("Rows of data before delted dupltes:", data.size)
 
     #for i in range(count):
      #   id_tweet.append(data["TweetID"].iloc[i])
@@ -48,7 +48,7 @@ def print_tweets(file, count):
                 pass
         if len(list_tweets) == count:
             break
-    print("Storlek på listan med data inklusive oanvändabara TweetIDs:", len(id_tweet))
+    print("Size of list with data including unusable TweetID:s:", len(id_tweet))
     print("Number of collected tweet texts:", len(list_tweets))
 
     for i in range(len(list_tweets)):
