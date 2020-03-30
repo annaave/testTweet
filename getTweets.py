@@ -74,7 +74,10 @@ def print_tweets(file, count, newFile):
 #for tweets in public_tweets:
 #    print(tweets.text)
 
-def replies_tweet(name, tweet_id, number):
+
+
+#------ NOT SURE HOW THE REPLIES METHODS WORK ------
+def replies_tweet_1(name, tweet_id, number):
     replies = []
     for tweet in tweepy.Cursor(api.search, q='to:' + name, result_type='recent', timeout=999999).items(number):
         if hasattr(tweet, 'in_reply_to_status_id_str'):
@@ -82,6 +85,21 @@ def replies_tweet(name, tweet_id, number):
                 replies.append(tweet.text)
     for i in range(len(replies)):
         print("Reply:", replies[i])
+
+def replies_tweet_2(name, tweet_id, number):
+    replies = []
+    # non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
+    limit = 50
+
+    for full_tweets in tweepy.Cursor(api.user_timeline, screen_name=name, timeout=999999).items(limit):
+        for tweet in tweepy.Cursor(api.search, q='to:' + name, since_id=tweet_id, result_type='recent',
+                                   timeout=999999).items(number):
+            if hasattr(tweet, 'in_reply_to_status_id_str'):
+                if (tweet.in_reply_to_status_id_str == full_tweets.id_str):
+                    replies.append(tweet.text)
+        # print("Tweet :",full_tweets.text.translate(non_bmp_map))
+        for elements in replies:
+            print("Replies :", elements)
 
 def main():
     print("Portuguese tweets:")
