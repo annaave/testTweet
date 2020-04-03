@@ -18,6 +18,7 @@ api = tweepy.API(auth, wait_on_rate_limit=True)
 #except:
 #    print("Error during authentication")
 #
+#
 
 def print_tweets(file, count, newFile):
     id_tweet = []
