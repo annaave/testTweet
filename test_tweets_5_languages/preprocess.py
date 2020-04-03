@@ -1,5 +1,6 @@
 import pandas as pd
-from nltk.tokenize import word_tokenize
+
+#from nltk.tokenize import word_tokenize
 
 
 def add_label_csv(file, lang, newFile):
@@ -30,11 +31,19 @@ def cleanTweet(data):
             print(words[i])
 
 
+def cleanTweet_line(line):
+    # split into words by white space
+    words = line.split()
+    print(line)
+
+
 def main():
     #add_label_csv("new_Eng_tweets.csv", "English", "Eng_tweets.csv")
-    eng_data = toDataframe("Eng_tweets.csv")
+    #eng_data = toDataframe("Eng_tweets.csv")
     #print(eng_data)
-    cleanTweet(eng_data)
+    #cleanTweet(eng_data)
+
+    cleanTweet_line("WOW så fett!! :D ;)")
 
 if __name__ == "__main__":
     main()
