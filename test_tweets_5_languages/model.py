@@ -14,6 +14,7 @@ from keras.layers import Conv2D, MaxPooling2D, Activation
 
 
 #https://towardsdatascience.com/multi-class-text-classification-with-lstm-1590bee1bd17
+#https://towardsdatascience.com/multi-class-text-classification-with-lstm-using-tensorflow-2-0-d88627c10a35
 def rnn_lstm_model_1(activation, input_shape, num_classes):
     model = Sequential()
 
