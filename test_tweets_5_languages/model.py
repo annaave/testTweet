@@ -13,6 +13,11 @@ from keras.layers import Conv2D, MaxPooling2D, Activation
 
 
 
+#https://towardsdatascience.com/multi-class-text-classification-with-lstm-1590bee1bd17
+def rnn_lstm_model_1(activation, input_shape, num_classes):
+    model = Sequential()
+
+
 #------ Example of TensorFlow use from earlier project ------
 # Function to build a CNN model for the real-time classification on computer
 def standard_cnn_model_uci(activation, input_shape, num_classes):

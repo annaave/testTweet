@@ -42,7 +42,7 @@ def print_tweets(file, count, newFile):
             list_tweets.append(tweet.full_text)
         except Exception as e:
             if e == "[{u'message': u'Rate limit exceeded', u'code': 88}]":
-                print("Will g to sleep for 5 minutes now!")
+                print("Will go to sleep for 5 minutes now!")
                 time.sleep(60*5) #Sleep for 5 minutes
             else:
                 print(e)
