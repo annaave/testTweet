@@ -7,9 +7,9 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
 
-vocab_size = 500
+vocab_size = 5000
 embedding_dim = 64
-max_length = 30
+max_length = 15
 trunc_type = 'post'
 padding_type = 'post'
 oov_tok = '<OOV>'
@@ -19,12 +19,12 @@ all_data = []
 tweets = []
 labels = []
 
-with open("preproc_Eng.csv", 'r') as csvfile:
+with open("1000_preproc_Eng.csv", 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     next(reader)
     for row in reader:
         all_data.append(row)
-with open("preproc_Swe.csv", 'r') as csvfile:
+with open("1000_preproc_Swe.csv", 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     next(reader)
     for row in reader:
@@ -32,24 +32,12 @@ with open("preproc_Swe.csv", 'r') as csvfile:
 
 np.random.shuffle(all_data)
 print(all_data)
+print(len(all_data))
 
 for row in all_data:
     tweets.append(row[0])
     labels.append(row[1])
 
-# with open("preproc_Eng.csv", 'r') as csvfile:
-#     reader = csv.reader(csvfile, delimiter=',')
-#     next(reader)
-#     for row in reader:
-#         tweets.append(row[0])
-#         labels.append(row[1])
-#
-# with open("preproc_Swe.csv", 'r') as csvfile:
-#     reader = csv.reader(csvfile, delimiter=',')
-#     next(reader)
-#     for row in reader:
-#         tweets.append(row[0])
-#         labels.append(row[1])
 
 print(len(tweets))
 print(len(labels))
@@ -128,7 +116,7 @@ print(train_tweets[10])
 
 
 model = tf.keras.Sequential([
-    # Add an Embedding layer expecting input vocab of size 500,
+    # Add an Embedding layer expecting input vocab of size 5000,
     # and output embedding dimension of size 64 we set at the top
     tf.keras.layers.Embedding(vocab_size, embedding_dim),
     tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(embedding_dim)),
@@ -137,14 +125,52 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(embedding_dim, activation='relu'),
     # Add a Dense layer with 2 units and softmax activation.
     # When we have multiple outputs, softmax convert outputs layers into a probability distribution.
-    tf.keras.layers.Dense(2, activation='softmax')
+    tf.keras.layers.Dense(3, activation='softmax')
 ])
 model.summary()
 
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 num_epochs = 5
-# history = model.fit(train_padded, training_label_seq, epochs=num_epochs,
-                    #validation_data=(validation_padded, validation_label_seq), verbose=2)
+history = model.fit(train_padded, training_label_seq, epochs=num_epochs,
+                    validation_data=(validation_padded, validation_label_seq), verbose=1)
+
+
+
+loss, acc = model.evaluate(validation_padded, validation_label_seq, verbose=1)
+print("Loss: %.2f" % (loss))
+print("Validation Accuracy: %.2f" % (acc) )
+
+
+y_pred = model.predict_classes(validation_padded)
+print(tf.math.confusion_matrix(labels=validation_label_seq, predictions=y_pred))
+
+
+new_test = ["hej på dig då!"]
+tokenizer.fit_on_texts(new_test)
+new_sequences = tokenizer.texts_to_sequences(new_test)
+new_padded = pad_sequences(new_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
+
+new_prediction = model.predict(new_padded)
+#labels = ['English', 'Swedish']
+#print(new_prediction, labels[np.argmax(new_prediction)])
+
+new_labels = ['none', 'English', 'Swedish']
+
+print("New test:", new_test)
+print(new_prediction)
+print("Final prediction:", new_labels[np.argmax(new_prediction)])
+
+
+new_test_2 = ["well brother"]
+tokenizer.fit_on_texts(new_test_2)
+new_sequences_2 = tokenizer.texts_to_sequences(new_test_2)
+new_padded_2 = pad_sequences(new_sequences_2, maxlen=max_length, padding=padding_type, truncating=trunc_type)
+
+new_prediction_2 = model.predict(new_padded_2)
+
+print("New test 2:", new_test_2)
+print(new_prediction_2)
+print("Final prediction 2:", new_labels[np.argmax(new_prediction_2)])
 
 
 def plot_graphs(history, string):
@@ -153,7 +179,7 @@ def plot_graphs(history, string):
     plt.xlabel("Epochs")
     plt.ylabel(string)
     plt.legend([string, 'val_' + string])
-    plt.show()
+    # plt.show()
 
 
 plot_graphs(history, "accuracy")

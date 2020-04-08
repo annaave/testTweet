@@ -97,9 +97,9 @@ def remove_emojies(text):
 
 
 def main():
-    add_label_csv("new_Swe_tweets.csv", "Swedish", "Swe_tweets.csv")
-    swe_data = toDataframe("Swe_tweets.csv")
-    cleanTweets(swe_data, 'Swedish', 'preproc_Swe.csv')
+    add_label_csv("1000_Spa_tweets.csv", "Spanish", "1000_Spa_tweets_label.csv")
+    #swe_data = toDataframe("1000_Spa_tweets_label.csv")
+    #cleanTweets(swe_data, 'English', '1000_preproc_Eng.csv')
 
     #cleanTweet_line("RT @loj WOW!! det ÄR så fett!! :D ;) \U0001f604 #life #cool#nice")
 
