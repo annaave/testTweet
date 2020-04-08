@@ -19,12 +19,12 @@ all_data = []
 tweets = []
 labels = []
 
-with open("1000_preproc_Eng.csv", 'r') as csvfile:
+with open("1000_Eng_tweets_label.csv", 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     next(reader)
     for row in reader:
         all_data.append(row)
-with open("1000_preproc_Swe.csv", 'r') as csvfile:
+with open("1000_Swe_tweets_label.csv", 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     next(reader)
     for row in reader:
@@ -85,12 +85,12 @@ print(len(validation_sequences))
 print(validation_padded.shape)
 
 print(set(labels))
-
 label_tokenizer = Tokenizer()
 label_tokenizer.fit_on_texts(labels)
 
 training_label_seq = np.array(label_tokenizer.texts_to_sequences(train_labels))
 validation_label_seq = np.array(label_tokenizer.texts_to_sequences(validation_labels))
+
 
 print(training_label_seq[0])
 print(training_label_seq[1])
