@@ -104,8 +104,7 @@ print(validation_label_seq.shape)
 
 
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
-
-
+print(train_padded[:5])
 def decode_tweet(text):
     return ' '.join([reverse_word_index.get(i, '?') for i in text])
 

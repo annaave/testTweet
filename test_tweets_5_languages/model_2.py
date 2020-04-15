@@ -152,7 +152,6 @@ def main():
     validation_labels = labels[train_size:]
 
     print("Labels:", set(labels))
-
     print()
     print("Training size:", train_size)
     print("Number of training tweets:", len(train_tweets))
@@ -170,9 +169,11 @@ def main():
     print(labels[1])
     print(labels[2])
 
-
     train_tweets = text_to_unicode(train_tweets)
     validation_tweets = text_to_unicode(validation_tweets)
+
+    print(train_tweets[:3])
+
 
     train_padded = []
     validation_padded = []
@@ -201,8 +202,8 @@ def main():
     print(training_label_seq[1])
     print(training_label_seq[2])
 
-
-
+    print(train_padded[:3])
+    print(train_padded[2])
 # Calculating average and maximum values of the original length of the 1-gram input data string
     med = 0
     max_len = 0
