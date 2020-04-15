@@ -5,14 +5,15 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
-from keras.layers import Dense, Embedding, LSTM, SpatialDropout1D
+from keras.layers import Dense, Embedding, LSTM, Conv2D
+from keras.layers import Dropout, Flatten # Different types of layers
 import numpy as np
 import sys
 #import matplotlib.pyplot as plt
 import re
 np.set_printoptions(threshold=sys.maxsize)
 
-vocab_size = 1000
+vocab_size = 2000
 embedding_dim = 64
 max_length = 150
 trunc_type = 'post'
@@ -77,12 +78,12 @@ def text_to_unicode(data):
         new_data.append(new_row)
     return new_data
 
-def pad(A, length):
-    A = np.pad(A, (0, length-len(A)), constant_values = 0)
+def pad(a, length):
+    a = np.pad(a, (0, length-len(a)), constant_values = 0)
     # arr = np.zeros(length)
     # arr[:len(A)] = A
     # return arr
-    return A
+    return a
 
 def lstm_model(train_padded, train_label_padd, validation_padded, vali_label_pad):
     model = tf.keras.Sequential([
@@ -219,15 +220,21 @@ def main():
     print(len(validation_label_seq))
 
     train_padded = np.asanyarray(train_padded)
+    train_padded = train_padded.reshape(1, 4001, 150)
+    #training_label_seq = np.asanyarray(training_label_seq)
+    validation_padded = np.asanyarray(validation_padded)
+    validation_padded = validation_padded.reshape(1, 1001, 150)
+    #validation_label_seq = np.asanyarray(validation_label_seq)
     print(train_padded.shape)
 
     model = Sequential()
-    model.add(LSTM(64, activation='relu', input_shape=train_padded[0].shape, return_sequences=True))
+    model.add(LSTM(embedding_dim, input_shape=(4001, 150)))
     model.add(Dense(2, activation='softmax'))
+
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.summary()
     num_epochs = 5
-    history = model.fit(train_padded, training_label_seq, epochs=num_epochs,
-                        validation_data=(validation_padded, validation_label_seq), verbose=1)
+    model.fit(train_padded, training_label_seq, epochs=num_epochs, validation_data=(validation_padded, validation_label_seq), verbose=1)
 
     loss, acc = model.evaluate(validation_padded, validation_label_seq, verbose=1)
     print("Loss: %.2f" % (loss))
