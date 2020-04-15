@@ -4,14 +4,16 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from keras.models import Sequential
+from keras.layers import Dense, Embedding, LSTM, SpatialDropout1D
 import numpy as np
 import sys
 #import matplotlib.pyplot as plt
 import re
 np.set_printoptions(threshold=sys.maxsize)
 
-max_feature = 10000
-embedding_dim = 32
+vocab_size = 1000
+embedding_dim = 64
 max_length = 150
 trunc_type = 'post'
 padding_type = 'post'
@@ -64,12 +66,23 @@ def n_gram_text(text, n):
     return text
 
 def text_to_unicode(data):
+    new_data = []
     for row in data:
-        part = [part.encode("utf-8") for part in row]
+        new_row = []
+        for part in row:
+            #part = part.encode("utf-8")
+            part = ord(part)
+            new_row.append(part)
+        row = new_row
+        new_data.append(new_row)
+    return new_data
 
-#def text_to_sequence(data):
-
-#def data_padding(data):
+def pad(A, length):
+    A = np.pad(A, (0, length-len(A)), constant_values = 0)
+    # arr = np.zeros(length)
+    # arr[:len(A)] = A
+    # return arr
+    return A
 
 def lstm_model(train_padded, train_label_padd, validation_padded, vali_label_pad):
     model = tf.keras.Sequential([
@@ -116,14 +129,15 @@ def main():
     #Printing all sizes of the data, training data and validation data.
     print("Number of tweets:", len(tweets))
     print("Number of labels:", len(labels))
-
-    print("Text before and after converting to n-grams:")
+    print()
+    print("Text before converting to n-grams:")
     print(tweets[0])
     print(tweets[1])
     print(tweets[2])
 
-    tweets = [n_gram_text(line, 2) for line in tweets]
-
+    tweets = [n_gram_text(line, 1) for line in tweets]
+    print()
+    print("Text after converting to n-grams:")
     print(tweets[0])
     print(tweets[1])
     print(tweets[2])
@@ -136,18 +150,88 @@ def main():
     validation_tweets = tweets[train_size:]
     validation_labels = labels[train_size:]
 
+    print("Labels:", set(labels))
+
+    print()
     print("Training size:", train_size)
     print("Number of training tweets:", len(train_tweets))
     print("Number of training labels:", len(train_labels))
     print("Number of validation tweets:", len(validation_tweets))
     print("Number of validation labels:", len(validation_labels))
 
+
+    print()
+    print("No padding and before encoded as unicode, of first 3 tweets in training data:")
     print(tweets[0])
     print(tweets[1])
     print(tweets[2])
     print(labels[0])
     print(labels[1])
     print(labels[2])
+
+
+    train_tweets = text_to_unicode(train_tweets)
+    validation_tweets = text_to_unicode(validation_tweets)
+
+    train_padded = []
+    validation_padded = []
+    for i in range(len(train_tweets)):
+        train_padded.append(pad(train_tweets[i], max_length))
+    print()
+    print("Length of 1st tweet in training data without padding:", len(train_tweets[0]))
+    print("Length of 1st tweet in training data with padding:", len(train_padded[0]))
+
+    for i in range(len(validation_tweets)):
+        validation_padded.append(pad(validation_tweets[i], max_length))
+    print("Length of 1st tweet in validation data without padding:", len(validation_tweets[0]))
+    print("Length of 1st tweet in validation data with padding:", len(validation_padded[0]))
+
+    label_tokenizer = Tokenizer()
+    label_tokenizer.fit_on_texts(labels)
+    training_label_seq = np.array(label_tokenizer.texts_to_sequences(train_labels))
+    validation_label_seq = np.array(label_tokenizer.texts_to_sequences(validation_labels))
+
+    print()
+    print("With both padding and encoding as unicode, of first 3 tweets in training data:")
+    print(train_padded[0])
+    print(train_padded[1])
+    print(train_padded[2])
+    print(training_label_seq[0])
+    print(training_label_seq[1])
+    print(training_label_seq[2])
+
+
+
+# Calculating average and maximum values of the original length of the 1-gram input data string
+    med = 0
+    max_len = 0
+    for row in tweets:
+        med += len(row)
+        if len(row) > max_len:
+            max_len = len(row)
+
+    print("Average length of input data:", med/(len(tweets)-1))
+    print("Maximum length of input data:", max_len)
+
+    print(len(train_padded))
+    print(len(training_label_seq))
+    print(len(validation_padded))
+    print(len(validation_label_seq))
+
+    train_padded = np.asanyarray(train_padded)
+    print(train_padded.shape)
+
+    model = Sequential()
+    model.add(LSTM(64, activation='relu', input_shape=train_padded[0].shape, return_sequences=True))
+    model.add(Dense(2, activation='softmax'))
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    num_epochs = 5
+    history = model.fit(train_padded, training_label_seq, epochs=num_epochs,
+                        validation_data=(validation_padded, validation_label_seq), verbose=1)
+
+    loss, acc = model.evaluate(validation_padded, validation_label_seq, verbose=1)
+    print("Loss: %.2f" % (loss))
+    print("Validation Accuracy: %.2f" % (acc))
 
 
     # pritning all data to see that they are correct
@@ -159,20 +243,12 @@ def main():
     #print(the_language.to_string())
     #print(other_languages.to_string())
 
-    tokenizer = Tokenizer(num_words=max_feature, oov_token=oov_tok)
-    tokenizer.fit_on_texts(train_tweets)
-    word_index = tokenizer.word_index
-    print(dict(list(word_index.items())[0:100]))
 
-    train_sequences = tokenizer.texts_to_sequences(train_tweets)
-
-    #train_padded = pad_sequences(train_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
-
-    new_text = "hej jag ääär Coola Killen"
-    new_text = n_gram_text(new_text, 1)
-    print(new_text)
-    new_text = [part.encode("utf-8") for part in new_text]
-    print(new_text)
+    # new_text = "hej jag ääär Coola Killen"
+    # new_text = n_gram_text(new_text, 1)
+    # print(new_text)
+    # new_text = [part.encode("utf-8") for part in new_text]
+    # print(new_text)
 
 if __name__ == "__main__":
     main()
