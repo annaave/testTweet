@@ -79,11 +79,11 @@ def text_to_unicode(data):
     return new_data
 
 def pad(a, length):
-    a = np.pad(a, (0, length-len(a)), constant_values = 0)
-    # arr = np.zeros(length)
-    # arr[:len(A)] = A
-    # return arr
-    return a
+    #a = np.pad(a, (0, length-len(a)), constant_values = 0)
+    arr = np.zeros(length)
+    arr[:len(a)] = a
+    return arr
+    #return a
 
 def lstm_model(train_padded, train_label_padd, validation_padded, vali_label_pad):
     model = tf.keras.Sequential([
@@ -174,14 +174,15 @@ def main():
 
     print(train_tweets[:3])
 
-
     train_padded = []
     validation_padded = []
     for i in range(len(train_tweets)):
-        train_padded.append(pad(train_tweets[i], max_length))
+        padding = pad(train_tweets[i], max_length)
+        train_padded.append(padding)
     print()
     print("Length of 1st tweet in training data without padding:", len(train_tweets[0]))
     print("Length of 1st tweet in training data with padding:", len(train_padded[0]))
+
 
     for i in range(len(validation_tweets)):
         validation_padded.append(pad(validation_tweets[i], max_length))
@@ -202,8 +203,11 @@ def main():
     print(training_label_seq[1])
     print(training_label_seq[2])
 
-    print(train_padded[:3])
-    print(train_padded[2])
+    x_train = np.asarray(train_padded)
+    y_train = np.asarray(training_label_seq)
+    x_test = np.asarray(validation_padded)
+    y_test = np.asarray(validation_label_seq)
+
 # Calculating average and maximum values of the original length of the 1-gram input data string
     med = 0
     max_len = 0
@@ -215,29 +219,49 @@ def main():
     print("Average length of input data:", med/(len(tweets)-1))
     print("Maximum length of input data:", max_len)
 
-    print(len(train_padded))
-    print(len(training_label_seq))
-    print(len(validation_padded))
-    print(len(validation_label_seq))
+    print(x_train[:3])
+    print(len(y_train))
+    print(len(x_test))
+    print(len(y_test))
 
-    train_padded = np.asanyarray(train_padded)
-    train_padded = train_padded.reshape(1, 4001, 150)
+    #train_padded = np.asanyarray(train_padded)
+    #train_padded = train_padded.reshape(1, 4001, 150)
     #training_label_seq = np.asanyarray(training_label_seq)
-    validation_padded = np.asanyarray(validation_padded)
-    validation_padded = validation_padded.reshape(1, 1001, 150)
+    #validation_padded = np.asanyarray(validation_padded)
+    #validation_padded = validation_padded.reshape(1, 1001, 150)
     #validation_label_seq = np.asanyarray(validation_label_seq)
-    print(train_padded.shape)
+    x_train = x_train.reshape(1, 4001, 150)
+    x_test = x_test.reshape(1, 1001, 150)
+    print(x_train.shape)
+    print(x_test.shape)
+    input_length = x_train.shape[1]
+    input_dim = x_train.shape[2]
+    output_dim = 2
+    print(output_dim)
 
     model = Sequential()
-    model.add(LSTM(embedding_dim, input_shape=(4001, 150)))
-    model.add(Dense(2, activation='softmax'))
+    # model.add(LSTM(embedding_dim, input_shape=x_train.shape))
+    # model.add(Dense(2, activation='softmax'))
+    #
+    # model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # # Build the model
+    # model = Sequential()
+
+    # I arbitrarily picked the output dimensions as 4
+    model.add(LSTM(4, input_dim=input_dim, input_length=input_length))
+    # The max output value is > 1 so relu is used as final activation.
+    model.add(Dense(output_dim, activation='relu'))
 
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.summary()
-    num_epochs = 5
-    model.fit(train_padded, training_label_seq, epochs=num_epochs, validation_data=(validation_padded, validation_label_seq), verbose=1)
 
-    loss, acc = model.evaluate(validation_padded, validation_label_seq, verbose=1)
+    model.summary()
+    # num_epochs = 5
+    # model.fit(train_padded, training_label_seq, epochs=num_epochs, validation_data=(validation_padded, validation_label_seq), verbose=1)
+    # Set batch_size to 7 to show that it doesn't have to be a factor or multiple of your sample size
+    history = model.fit(x_train, y_train, batch_size=7, epochs=3, verbose=1)
+
+    loss, acc = model.evaluate(x_test, y_test, verbose=1)
+    #loss, acc = model.evaluate(validation_padded, validation_label_seq, verbose=1)
     print("Loss: %.2f" % (loss))
     print("Validation Accuracy: %.2f" % (acc))
 

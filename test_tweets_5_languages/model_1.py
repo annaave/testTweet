@@ -85,6 +85,7 @@ print(len(validation_sequences))
 print(validation_padded.shape)
 
 print(set(labels))
+
 label_tokenizer = Tokenizer()
 label_tokenizer.fit_on_texts(labels)
 
