@@ -131,7 +131,7 @@ model.summary()
 
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 num_epochs = 5
-history = model.fit(train_padded, training_label_seq, epochs=num_epochs,
+history = model.fit(train_padded, training_label_seq, batch_size=40, epochs=num_epochs,
                     validation_data=(validation_padded, validation_label_seq), verbose=1)
 
 
@@ -144,6 +144,11 @@ print("Validation Accuracy: %.2f" % (acc) )
 y_pred = model.predict_classes(validation_padded)
 print(tf.math.confusion_matrix(labels=validation_label_seq, predictions=y_pred))
 
+print('\n# Generate predictions for 3 samples')
+predictions = model.predict(validation_padded[:3])
+print('prediction 1:', validation_tweets[0], predictions[0], "Correct label:", validation_label_seq[0])
+print('prediction 2:', validation_tweets[1], predictions[1], "Correct label:", validation_label_seq[1])
+print('prediction 3:', validation_tweets[2], predictions[2], "Correct label:", validation_label_seq[2])
 
 new_test = ["hej på dig då!"]
 tokenizer.fit_on_texts(new_test)
