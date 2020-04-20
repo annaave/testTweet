@@ -1,4 +1,3 @@
-
 # import pandas as pd
 import csv
 import tensorflow as tf
@@ -7,9 +6,9 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
 
-vocab_size = 5000
+vocab_size = 500
 embedding_dim = 64
-max_length = 15
+max_length = 150
 trunc_type = 'post'
 padding_type = 'post'
 oov_tok = '<OOV>'
@@ -57,13 +56,14 @@ print(len(train_labels))
 print(len(validation_tweets))
 print(len(validation_labels))
 
-tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok)
+tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok, char_level=True)
 tokenizer.fit_on_texts(train_tweets)
 word_index = tokenizer.word_index
 print(dict(list(word_index.items())[0:10]))
 
 train_sequences = tokenizer.texts_to_sequences(train_tweets)
 print(train_sequences[10])
+print(train_tweets[10])
 train_padded = pad_sequences(train_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
 
 print(len(train_sequences[0]))
@@ -91,6 +91,14 @@ label_tokenizer.fit_on_texts(labels)
 
 training_label_seq = np.array(label_tokenizer.texts_to_sequences(train_labels))
 validation_label_seq = np.array(label_tokenizer.texts_to_sequences(validation_labels))
+
+for i in range(0,len(validation_label_seq)):
+    validation_label_seq[i] = validation_label_seq[i]-1
+
+
+for i in range(0,len(training_label_seq)):
+    training_label_seq[i] = training_label_seq[i]-1
+
 
 
 print(training_label_seq[0])
@@ -125,12 +133,12 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(embedding_dim, activation='relu'),
     # Add a Dense layer with 2 units and softmax activation.
     # When we have multiple outputs, softmax convert outputs layers into a probability distribution.
-    tf.keras.layers.Dense(3, activation='softmax')
+    tf.keras.layers.Dense(2, activation='softmax')
 ])
 model.summary()
 
 model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-num_epochs = 5
+num_epochs = 10
 history = model.fit(train_padded, training_label_seq, batch_size=40, epochs=num_epochs,
                     validation_data=(validation_padded, validation_label_seq), verbose=1)
 
@@ -145,37 +153,26 @@ y_pred = model.predict_classes(validation_padded)
 print(tf.math.confusion_matrix(labels=validation_label_seq, predictions=y_pred))
 
 print('\n# Generate predictions for 3 samples')
-predictions = model.predict(validation_padded[:3])
+predictions = model.predict(validation_padded)
 print('prediction 1:', validation_tweets[0], predictions[0], "Correct label:", validation_label_seq[0])
 print('prediction 2:', validation_tweets[1], predictions[1], "Correct label:", validation_label_seq[1])
 print('prediction 3:', validation_tweets[2], predictions[2], "Correct label:", validation_label_seq[2])
 
-new_test = ["hej på dig då!"]
-tokenizer.fit_on_texts(new_test)
-new_sequences = tokenizer.texts_to_sequences(new_test)
+min_pred = 1
+i = 0
+for prediction in predictions:
+    if abs(prediction[0] -prediction[1]) < min_pred:
+        min_pred = abs(prediction[0] -prediction[1])
+        min_i = i
+    i+=1
+print('prediction:', validation_tweets[min_i], predictions[min_i], "Correct label:", validation_label_seq[min_i])
+
+
+new_line = "perfekta tweets"
+new_sequences = tokenizer.texts_to_sequences([new_line])
 new_padded = pad_sequences(new_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
-
 new_prediction = model.predict(new_padded)
-#labels = ['English', 'Swedish']
-#print(new_prediction, labels[np.argmax(new_prediction)])
-
-new_labels = ['none', 'English', 'Swedish']
-
-print("New test:", new_test)
-print(new_prediction)
-print("Final prediction:", new_labels[np.argmax(new_prediction)])
-
-
-new_test_2 = ["well brother"]
-tokenizer.fit_on_texts(new_test_2)
-new_sequences_2 = tokenizer.texts_to_sequences(new_test_2)
-new_padded_2 = pad_sequences(new_sequences_2, maxlen=max_length, padding=padding_type, truncating=trunc_type)
-
-new_prediction_2 = model.predict(new_padded_2)
-
-print("New test 2:", new_test_2)
-print(new_prediction_2)
-print("Final prediction 2:", new_labels[np.argmax(new_prediction_2)])
+print('prediction 4:', new_line, new_prediction[0], "Correct label:", " ")
 
 
 def plot_graphs(history, string):

@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 import re
 import tensorflow as tf
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Dropout
-from keras.layers import LSTM, Embedding, Bidirectional
-from keras.utils import np_utils
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation, Dropout
+from tensorflow.keras.layers import LSTM, Embedding, Bidirectional
+from tensorflow.keras.utils import np_utils
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
@@ -53,6 +53,7 @@ def read_all(class_names):
 
     return all_data
 
+
 def clean_up(line):
     # remove url
     line = re.sub(r'http\S+', '', line)
@@ -60,9 +61,40 @@ def clean_up(line):
     # lowercase all letters
     words = line.split()
     words = [word.lower() for word in words]
+
     line = ' '.join(words)
 
+    # remove emojis
+    line = remove_emojies(line)
+
+    #remove excessive signs
+    remove_characters = re.compile('[/(){}\[\]\|.,;:!?"<>^*&%$]')
+    line = remove_characters.sub('', line)
+
+
     return line
+
+
+def remove_emojies(text):
+  # Ref: https://gist.github.com/Alex-Just/e86110836f3f93fe7932290526529cd1#gistcomment-3208085
+  # Ref: https://en.wikipedia.org/wiki/Unicode_block
+    EMOJI_PATTERN = re.compile(
+    "(["
+    "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+    "\U0001F600-\U0001F64F"  # emoticons
+    "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F700-\U0001F77F"  # alchemical symbols
+    "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+    "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+    "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+    "\U0001FA00-\U0001FA6F"  # Chess Symbols
+    "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+    "\U00002702-\U000027B0"  # Dingbats
+    "])")
+    text = re.sub(EMOJI_PATTERN, r'', text)
+    return text
+
 
 def split_data(frame):
     train, validation = train_test_split(frame, test_size=0.2)
@@ -76,6 +108,7 @@ def encode_ngram_text(text, n):
     text = [text[i:i + n] for i in range(len(text) - n + 1)] #splitting up the text as n-grams
     text = [ord(text[i]) for i in range(len(text))] #converting every character to its unicode
     return text
+
 
 def pad(data, length):
     new_data = []
@@ -96,10 +129,10 @@ def main():
 
     train, validation, test = split_data(all_data)
 
-    print("Printing first 50 training tweets and its labels before making changes of input representation:")
-    print(train[:50])
+    #print("Printing first 50 training tweets and its labels before making changes of input representation:")
+    #print(train[:50])
 
-    test_lines = test[:3]
+    test_lines = test
 
     x_train = np.asarray([np.asarray(text) for text in train['tweets']])
 
@@ -113,6 +146,8 @@ def main():
 
     x_train = [encode_ngram_text(line, 1) for line in x_train]
     x_train = pad(x_train, max_length)
+    for train in x_train[:3]:
+        print(train)
     x_validation = [encode_ngram_text(line, 1) for line in x_validation]
     x_validation = pad(x_validation, max_length)
     x_test = [encode_ngram_text(line, 1) for line in x_test]
@@ -159,14 +194,12 @@ def main():
     model = Sequential()
     model.add(LSTM(64, input_shape=(1, 150)))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
     model.add(Dense(units=len(class_names)))
     model.add(Activation('softmax'))
     model.summary()
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['acc'])
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
-    history = model.fit(x_train, y_train, batch_size=10, epochs=50, validation_data=(x_validation, y_validation), verbose=1)
+    history = model.fit(x_train, y_train, batch_size=10, epochs=10, validation_data=(x_validation, y_validation), verbose=1)
 
     loss, acc = model.evaluate(x_validation, y_validation, verbose=1)
     print("Loss: %.2f" % (loss))
@@ -177,13 +210,18 @@ def main():
     print("Loss: %.2f" % (loss2))
     print("Test (hold-out-dataset) Accuracy: %.2f" % (acc3))
 
-    # print('\n# Generate predictions for 3 samples')
-    # print(test_lines)
-    # predictions = model.predict(x_test[:3])
-    # print('prediction 1:%.2f' % predictions[0], "Correct label:", y_test[0])
-    # print('prediction 2:%.2f' % predictions[1], "Correct label:", y_test[1])
-    # print('prediction 3:%.2f' % predictions[2], "Correct label:", y_test[2])
 
+    print('\n# Generate predictions for 3 samples')
+    print(test_lines)
+    predictions = model.predict(x_test)
+    sum = 0
+    for i in range(len(x_test)):
+        new_pred = np.argmax(predictions[i])
+        old_pred = np.argmax(y_test[i])
+        print('prediction:', new_pred, "Correct label:", old_pred)
+        if new_pred == old_pred:
+            sum+=1
+    print(sum/len(x_test))
 
     # Plot training & validation accuracy values
     plt.plot(history.history['acc'])
