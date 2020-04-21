@@ -14,8 +14,8 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 
-vocab_size = 500
-embedding_dim = 128
+vocab_size = 300
+embedding_dim = 32
 max_length = 150
 num_epochs = 15
 trunc_type = 'post'
@@ -170,7 +170,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_April_21.png')
+    plt.savefig('5_lang_acc_val.png')
 
     y_pred = model.predict_classes(x_test_pad)
     print(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
