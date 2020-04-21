@@ -30,6 +30,7 @@ def print_tweets(file, count, newFile):
     data.drop_duplicates(subset="TweetID", keep=False, inplace=True)
     print("Rows of data before duplicated rows deleted:", data.size)
 
+    final_i = 0
     #for i in range(count):
      #   id_tweet.append(data["TweetID"].iloc[i])
     #print(id_tweet)
@@ -48,9 +49,11 @@ def print_tweets(file, count, newFile):
                 print(e)
                 pass
         if len(list_tweets) == count:
+            final_i = data["TweetID"].iloc[i]
             break
     print("Size of list with data including unusable TweetID:s:", len(id_tweet))
     print("Number of collected tweet texts:", len(list_tweets))
+    print("Final index from original tweet file used in this iteration:", final_i)
 
     for i in range(len(list_tweets)):
         print("Tweet:", list_tweets[i])
@@ -103,9 +106,12 @@ def replies_tweet_2(name, tweet_id, number):
         for elements in replies:
             print("Replies :", elements)
 
+
 def main():
     print("Portuguese tweets:")
     print_tweets("Portuguese_Twitter_sentiment.csv", 50, "new_Port_tweets.csv")
+
+
 
     #print("English tweets:")
     #print_tweets("English_Twitter_sentiment.csv", 5)

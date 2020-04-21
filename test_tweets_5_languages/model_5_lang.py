@@ -1,3 +1,6 @@
+#benchmarking
+#https://towardsdatascience.com/language-detection-benchmark-using-production-data-8fe6c1f9f46c
+
 import pandas as pd
 import numpy as np
 import re
@@ -9,10 +12,12 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
+from keras.callbacks import EarlyStopping
 
 vocab_size = 500
-embedding_dim = 64
+embedding_dim = 128
 max_length = 150
+num_epochs = 15
 trunc_type = 'post'
 padding_type = 'post'
 oov_tok = '<OOV>'
@@ -51,7 +56,7 @@ def read_all(class_names):
 
     all_data = pd.concat([df1, df2, df3, df4, df5], ignore_index=True, sort=False)
 
-    # Remove url:s
+    # Clean tweet data
     for i in range(len(all_data)):
         all_data['tweets'][i] = clean_up(all_data['tweets'][i])
 
@@ -66,13 +71,12 @@ def clean_up(line):
     line = re.sub(r'http\S+', '', line)
 
     # lowercase all letters
-    words = line.split()
-    words = [word.lower() for word in words]
-
-    line = ' '.join(words)
+    #words = line.split()
+    #words = [word.lower() for word in words]
+    #line = ' '.join(words)
 
     # remove emojis
-    line = remove_emojies(line)
+    #line = remove_emojies(line)
 
     # remove excessive signs
     # remove_characters = re.compile('[/(){}\[\]\|.,;:!?"<>^*&%$]')
@@ -130,6 +134,63 @@ def decode(text):
     return text
 
 
+# returns maximum integer value in the tokenized dictionary of a character in the dataset
+def max_dict_value(data):
+    n = 0
+    for row in data:
+        for element in row:
+            if element > n:
+                n = element
+    return n
+
+
+def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_validation_pad, y_validation,
+             x_test_pad, y_test, x_test, tokenizer, num_epochs):
+    model = Sequential()
+    model.add(Embedding(vocab_size, embedding_dim))
+    model.add(Bidirectional(LSTM(embedding_dim)))
+    model.add(Dense(embedding_dim, activation='relu'))
+    model.add(Dense(len(class_names), activation='softmax'))
+    model.summary()
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
+    es = EarlyStopping(monitor='val_loss', min_delta=0.01, patience=240, mode='min', restore_best_weights=True)
+
+    history = model.fit(x_train_pad, y_train, batch_size=32, epochs=num_epochs,
+                        validation_data=(x_validation_pad, y_validation), verbose=1, callbacks=[es])
+
+    loss, acc = model.evaluate(x_validation_pad, y_validation, verbose=1)
+    print("Loss: %.2f" % loss)
+    print("Validation Accuracy: %.2f" % acc)
+
+    # Plot training & validation accuracy values
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.axhline(y=0.9, color='r', linestyle='--')
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Training', 'Validation'], loc='upper left')
+    plt.savefig('5_lang_April_21.png')
+
+    y_pred = model.predict_classes(x_test_pad)
+    print(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
+
+    print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
+    predictions = model.predict(x_test_pad)
+    print('prediction 1:', x_test[0], predictions[0], "Correct label:", y_test[0])
+    print('prediction 2:', x_test[1], predictions[1], "Correct label:", y_test[1])
+    print('prediction 3:', x_test[2], predictions[2], "Correct label:", y_test[2])
+    print('prediction 4:', x_test[3], predictions[3], "Correct label:", y_test[3])
+    print('prediction 5:', x_test[4], predictions[4], "Correct label:", y_test[4])
+    print('prediction 6:', x_test[5], predictions[5], "Correct label:", y_test[5])
+
+    new_line = "perfekta tweets är cool"
+    new_sequences = tokenizer.texts_to_sequences([new_line])
+    new_padded = pad_sequences(new_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
+    new_prediction = model.predict(new_padded)
+    print('prediction of:', new_line, new_prediction[0], "Correct label: Svenska eller Engelska?")
+
+
 def main():
     class_names = ["English", "Swedish", "Spanish", "Portuguese", "Russian"]
 
@@ -138,7 +199,6 @@ def main():
     train, validation, test = split_data(all_data)
 
     x_train = np.asarray([np.asarray(text) for text in train['tweets']])
-
     y_train = np.asarray([np.asarray(label) for label in train['language']])
 
     x_validation = np.asarray([np.asarray(text) for text in validation['tweets']])
@@ -149,11 +209,11 @@ def main():
 
     print(x_train[0])
     print(x_train[1])
-    # print(all_data['tweets'])
+    print(all_data['tweets'])
     # print(all_data['language'])
 
     tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok, char_level=True)
-    tokenizer.fit_on_texts(all_data['tweets'])
+    tokenizer.fit_on_texts(train['tweets'])
     word_index = tokenizer.word_index
     print(dict(list(word_index.items())[0:10]))
 
@@ -171,43 +231,12 @@ def main():
     print(x_train_pad[1])
     print(y_train[1])
 
-    model = Sequential()
-    model.add(Embedding(vocab_size, embedding_dim))
-    model.add(Bidirectional(LSTM(embedding_dim)))
-    model.add(Dense(embedding_dim, activation='relu'))
-    model.add(Dense(5, activation='softmax'))
-    model.summary()
+    print("Maximum integer value of a unicode character in: training set:", max_dict_value(x_train_pad))
+    print("Maximum integer value of a unicode character in: validation set:", max_dict_value(x_validation_pad))
+    print("Maximum integer value of a character in: test set:", max_dict_value(x_test_pad))
 
-    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
-    num_epochs = 15
-    history = model.fit(x_train_pad, y_train, batch_size=64, epochs=num_epochs,
-                        validation_data=(x_validation_pad, y_validation), verbose=1)
-
-    loss, acc = model.evaluate(x_validation_pad, y_validation, verbose=1)
-    print("Loss: %.2f" % loss)
-    print("Validation Accuracy: %.2f" % acc)
-
-    # Plot training & validation accuracy values
-    plt.plot(history.history['acc'])
-    plt.plot(history.history['val_acc'])
-    plt.axhline(y=0.9, color='r', linestyle='--')
-    plt.title('Model accuracy')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('model_5_lang_test_fig.png')
-
-    y_pred = model.predict_classes(x_test_pad)
-    print(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
-
-    print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
-    predictions = model.predict(x_test_pad)
-    print('prediction 1:', x_test[0], predictions[0], "Correct label:", y_test[0])
-    print('prediction 2:', x_test[1], predictions[1], "Correct label:", y_test[1])
-    print('prediction 3:', x_test[2], predictions[2], "Correct label:", y_test[2])
-    print('prediction 4:', x_test[3], predictions[3], "Correct label:", y_test[3])
-    print('prediction 5:', x_test[4], predictions[4], "Correct label:", y_test[4])
-    print('prediction 6:', x_test[5], predictions[5], "Correct label:", y_test[5])
+    run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_validation_pad, y_validation, x_test_pad,
+             y_test, x_test, tokenizer, num_epochs)
 
 
 if __name__ == "__main__":
