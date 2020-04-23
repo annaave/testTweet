@@ -97,7 +97,7 @@ def remove_emojies(text):
 
 
 def main():
-    add_label_csv("1000_Spa_tweets.csv", "Spanish", "1000_Spa_tweets_label.csv")
+    add_label_csv("2000_Ger_tweets.csv", "German", "2000_Ger_tweets_label.csv")
     #swe_data = toDataframe("1000_Spa_tweets_label.csv")
     #cleanTweets(swe_data, 'English', '1000_preproc_Eng.csv')
 

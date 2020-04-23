@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 
 vocab_size = 300
-embedding_dim = 32
+embedding_dim = 128
 max_length = 150
 num_epochs = 15
 trunc_type = 'post'
@@ -29,30 +29,35 @@ def read_all(class_names):
     print(d)
     pd.options.display.max_colwidth = 1000
 
-    df1 = (pd.read_csv("1000_Eng_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+    df1 = (pd.read_csv("2000_Eng_tweets_label.csv", usecols=['tweets', 'language']).dropna(
         subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
     df1 = df1.drop(index=0)
     df1 = df1.reset_index(drop=True)
 
-    df2 = (pd.read_csv("1000_Swe_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+    df2 = (pd.read_csv("2000_Swe_tweets_label.csv", usecols=['tweets', 'language']).dropna(
         subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
     df2 = df2.drop(index=0)
     df2 = df2.reset_index(drop=True)
 
-    df3 = (pd.read_csv("1000_Rus_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+    df3 = (pd.read_csv("2000_Rus_tweets_label.csv", usecols=['tweets', 'language']).dropna(
         subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
     df3 = df3.drop(index=0)
     df3 = df3.reset_index(drop=True)
 
-    df4 = (pd.read_csv("1000_Por_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+    df4 = (pd.read_csv("2000_Por_tweets_label.csv", usecols=['tweets', 'language']).dropna(
         subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
     df4 = df4.drop(index=0)
     df4 = df4.reset_index(drop=True)
 
-    df5 = (pd.read_csv("1000_Spa_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+    df5 = (pd.read_csv("2000_Spa_tweets_label.csv", usecols=['tweets', 'language']).dropna(
         subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
     df5 = df5.drop(index=0)
     df5 = df5.reset_index(drop=True)
+
+    # df6 = (pd.read_csv("2000_Ger_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+    #     subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
+    # df6 = df6.drop(index=0)
+    # df6 = df6.reset_index(drop=True)
 
     all_data = pd.concat([df1, df2, df3, df4, df5], ignore_index=True, sort=False)
 
@@ -63,6 +68,8 @@ def read_all(class_names):
     all_data = all_data.sample(frac=1).reset_index(drop=True)
     all_data['language'] = all_data['language'].map(d, na_action='ignore')
 
+    print(all_data)
+    print(len(all_data))
     return all_data
 
 
@@ -71,16 +78,16 @@ def clean_up(line):
     line = re.sub(r'http\S+', '', line)
 
     # lowercase all letters
-    #words = line.split()
-    #words = [word.lower() for word in words]
-    #line = ' '.join(words)
+    words = line.split()
+    words = [word.lower() for word in words]
+    line = ' '.join(words)
 
     # remove emojis
-    #line = remove_emojies(line)
+    line = remove_emojies(line)
 
     # remove excessive signs
-    # remove_characters = re.compile('[/(){}\[\]\|.,;:!?"<>^*&%$]')
-    # line = remove_characters.sub('', line)
+    remove_characters = re.compile('[/(){}\[\]\|.,;:!?"<>^*&%$]')
+    line = remove_characters.sub('', line)
     return line
 
 
@@ -106,7 +113,7 @@ def remove_emojies(text):
 
 
 def split_data(frame):
-    train, validation = train_test_split(frame, test_size=0.2)
+    train, validation = train_test_split(frame, test_size=0.30)
     validation, test = train_test_split(validation, test_size=0.5)
     train = train.reset_index(drop=True)
     validation = validation.reset_index(drop=True)
@@ -162,6 +169,10 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     print("Loss: %.2f" % loss)
     print("Validation Accuracy: %.2f" % acc)
 
+    loss2, acc2 = model.evaluate(x_test_pad, y_test, verbose=1)
+    print("Loss: %.2f" % loss2)
+    print("Test Accuracy: %.2f" % acc2)
+
     # Plot training & validation accuracy values
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
@@ -170,7 +181,17 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_acc_val.png')
+    plt.savefig('5_lang_2000_April_23_128_allCleaned.png')
+    plt.close()
+
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Val'], loc='upper left')
+    plt.savefig('5_lang_loss_2000_April_23_128_allCleaned.png')
 
     y_pred = model.predict_classes(x_test_pad)
     print(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
@@ -184,7 +205,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     print('prediction 5:', x_test[4], predictions[4], "Correct label:", y_test[4])
     print('prediction 6:', x_test[5], predictions[5], "Correct label:", y_test[5])
 
-    new_line = "perfekta tweets är cool"
+    new_line = "perfekta tweets - cool"
     new_sequences = tokenizer.texts_to_sequences([new_line])
     new_padded = pad_sequences(new_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
     new_prediction = model.predict(new_padded)
