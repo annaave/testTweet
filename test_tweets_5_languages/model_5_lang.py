@@ -9,6 +9,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 from tensorflow.keras.layers import LSTM, Embedding, Bidirectional
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
@@ -113,7 +114,7 @@ def remove_emojies(text):
 
 
 def split_data(frame):
-    train, validation = train_test_split(frame, test_size=0.30)
+    train, validation = train_test_split(frame, test_size=0.20)
     validation, test = train_test_split(validation, test_size=0.5)
     train = train.reset_index(drop=True)
     validation = validation.reset_index(drop=True)
@@ -181,7 +182,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_2000_April_23_128_allCleaned.png')
+    plt.savefig('5_lang_2000_April_27_128.png')
     plt.close()
 
     # Plot training & validation loss values
@@ -191,10 +192,16 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
-    plt.savefig('5_lang_loss_2000_April_23_128_allCleaned.png')
+    plt.savefig('5_lang_loss_2000_April_27_128.png')
 
-    y_pred = model.predict_classes(x_test_pad)
-    print(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
+    #y_pred = model.predict_classes(x_test_pad)
+    y_pred2 = model.predict_classes(x_validation_pad)
+    #print(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
+    #print(classification_report(y_test, y_pred))
+    #print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_validation, y_pred2))
+    print(confusion_matrix(y_validation, y_pred2))
+
 
     print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
     predictions = model.predict(x_test_pad)
@@ -252,8 +259,8 @@ def main():
     print(x_train_pad[1])
     print(y_train[1])
 
-    print("Maximum integer value of a unicode character in: training set:", max_dict_value(x_train_pad))
-    print("Maximum integer value of a unicode character in: validation set:", max_dict_value(x_validation_pad))
+    print("Maximum integer value of a character in: training set:", max_dict_value(x_train_pad))
+    print("Maximum integer value of a character in: validation set:", max_dict_value(x_validation_pad))
     print("Maximum integer value of a character in: test set:", max_dict_value(x_test_pad))
 
     run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_validation_pad, y_validation, x_test_pad,
