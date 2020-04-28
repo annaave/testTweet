@@ -182,7 +182,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_2000_April_27_128.png')
+    plt.savefig('5_lang_2000_April_28_128_char.png')
     plt.close()
 
     # Plot training & validation loss values
@@ -192,7 +192,8 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
-    plt.savefig('5_lang_loss_2000_April_27_128.png')
+    plt.savefig('5_lang_loss_2000_April_28_128_char.png')
+    plt.close()
 
     #y_pred = model.predict_classes(x_test_pad)
     y_pred2 = model.predict_classes(x_validation_pad)
@@ -211,6 +212,111 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     print('prediction 4:', x_test[3], predictions[3], "Correct label:", y_test[3])
     print('prediction 5:', x_test[4], predictions[4], "Correct label:", y_test[4])
     print('prediction 6:', x_test[5], predictions[5], "Correct label:", y_test[5])
+
+    # Plot training & validation loss values
+    length_test = []
+    for i in range(len(x_test)):
+        length_test.append(len(x_test[i]))
+
+    count_10 = []
+    count_20 = []
+    count_30 = []
+    count_40 = []
+    count_50 = []
+    count_60 = []
+    count_70 = []
+    count_80 = []
+    count_90 = []
+    count_100 = []
+    count_150 = []
+    for i in range(len(length_test)):
+        if length_test[i] <= 10:
+            count_10.append(i)
+        if 10 < length_test[i] <= 20:
+            count_20.append(i)
+        if 20 < length_test[i] <= 30:
+            count_30.append(i)
+        if 30 < length_test[i] <= 40:
+            count_40.append(i)
+        if 40 < length_test[i] <= 50:
+            count_50.append(i)
+        if 50 < length_test[i] <= 60:
+            count_60.append(i)
+        if 60 < length_test[i] <= 70:
+            count_70.append(i)
+        if 70 < length_test[i] <= 80:
+            count_80.append(i)
+        if 80 < length_test[i] <= 90:
+            count_90.append(i)
+        if 90 < length_test[i] <= 100:
+            count_100.append(i)
+        if length_test[i] > 100:
+            count_150.append(i)
+
+    print(count_10)
+
+    print(x_test[count_10])
+    print(y_test[count_10])
+    pred_10 = model.predict(x_test_pad[count_10])
+    new_pred_10 = []
+    for i in range(len(pred_10)):
+        a = tf.argmax(pred_10[i])
+        new_pred_10.append(a)
+    print(new_pred_10)
+
+    # print(count_20)
+    # acc_20, loss_20 = model.evaluate(x_test_pad[count_20], y_test[count_20], verbose=1)
+    # print("Loss: %.2f" % loss_20)
+    # print("Test Accuracy: %.2f" % acc_20)
+    #
+    # print(count_30)
+    # acc_30, loss_30 = model.evaluate(x_test_pad[count_30], y_test[count_30], verbose=1)
+    # print("Loss: %.2f" % loss_30)
+    # print("Test Accuracy: %.2f" % acc_30)
+    #
+    # print(count_40)
+    # acc_40, loss_40 = model.evaluate(x_test_pad[count_40], y_test[count_40], verbose=1)
+    # print("Loss: %.2f" % loss_40)
+    # print("Test Accuracy: %.2f" % acc_40)
+    #
+    # print(count_50)
+    # acc_50, loss_50 = model.evaluate(x_test_pad[count_50], y_test[count_50], verbose=1)
+    # print("Loss: %.2f" % loss_50)
+    # print("Test Accuracy: %.2f" % acc_50)
+    #
+    # print(count_60)
+    # acc_60, loss_60 = model.evaluate(x_test_pad[count_60], y_test[count_60], verbose=1)
+    # print("Loss: %.2f" % loss_60)
+    # print("Test Accuracy: %.2f" % acc_60)
+    #
+    # print(count_70)
+    # acc_70, loss_70 = model.evaluate(x_test_pad[count_70], y_test[count_70], verbose=1)
+    # print("Loss: %.2f" % loss_70)
+    # print("Test Accuracy: %.2f" % acc_70)
+    #
+    # print(count_80)
+    # acc_80, loss_80 = model.evaluate(x_test_pad[count_80], y_test[count_80], verbose=1)
+    # print("Loss: %.2f" % loss_80)
+    # print("Test Accuracy: %.2f" % acc_80)
+    #
+    # print(count_90)
+    # acc_90, loss_90 = model.evaluate(x_test_pad[count_90], y_test[count_90], verbose=1)
+    # print("Loss: %.2f" % loss_90)
+    # print("Test Accuracy: %.2f" % acc_90)
+    #
+    # print(count_100)
+    # acc_100, loss_100 = model.evaluate(x_test_pad[count_100], y_test[count_100], verbose=1)
+    # print("Loss: %.2f" % loss_100)
+    # print("Test Accuracy: %.2f" % acc_100)
+    #
+    # print(count_150)
+    # acc_150, loss_150 = model.evaluate(x_test_pad[count_150], y_test[count_150], verbose=1)
+    # print("Loss: %.2f" % loss_150)
+    # print("Test Accuracy: %.2f" % acc_150)
+
+
+
+
 
     new_line = "perfekta tweets - cool"
     new_sequences = tokenizer.texts_to_sequences([new_line])
@@ -241,6 +347,7 @@ def main():
     # print(all_data['language'])
 
     tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok, char_level=True)
+    #tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok)
     tokenizer.fit_on_texts(train['tweets'])
     word_index = tokenizer.word_index
     print(dict(list(word_index.items())[0:10]))

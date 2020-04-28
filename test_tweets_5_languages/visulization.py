@@ -118,12 +118,11 @@ def main():
     print(all_data)
 
     s = all_data['tweet length']
-    ax = s.hist(bins=40)
+    ax = s.hist(bins=20)
     ax.set_xlabel('Number of characters')
     ax.set_ylabel('Number of tweets')
     ax.set_title('Distribution of tweet lengths')
     fig = ax.get_figure()
-
     fig.savefig('histo.png')
 
 
