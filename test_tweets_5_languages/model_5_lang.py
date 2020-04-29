@@ -9,16 +9,16 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 from tensorflow.keras.layers import LSTM, Embedding, Bidirectional
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, plot_confusion_matrix
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 
 vocab_size = 300
-embedding_dim = 128
+embedding_dim = 64
 max_length = 150
-num_epochs = 15
+num_epochs = 5
 trunc_type = 'post'
 padding_type = 'post'
 oov_tok = '<OOV>'
@@ -153,7 +153,7 @@ def max_dict_value(data):
 
 
 def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_validation_pad, y_validation,
-             x_test_pad, y_test, x_test, tokenizer, num_epochs):
+             x_test_pad, y_test, x_test, tokenizer, num_epochs, labels):
     model = Sequential()
     model.add(Embedding(vocab_size, embedding_dim))
     model.add(Bidirectional(LSTM(embedding_dim)))
@@ -182,7 +182,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_2000_April_28_128_char.png')
+    plt.savefig('5_lang_2000_April_29_128_char.png')
     plt.close()
 
     # Plot training & validation loss values
@@ -192,7 +192,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
-    plt.savefig('5_lang_loss_2000_April_28_128_char.png')
+    plt.savefig('5_lang_loss_2000_April_29_128_char.png')
     plt.close()
 
     #y_pred = model.predict_classes(x_test_pad)
@@ -201,7 +201,8 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     #print(classification_report(y_test, y_pred))
     #print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_validation, y_pred2))
-    print(confusion_matrix(y_validation, y_pred2))
+    cnf_matrix = confusion_matrix(y_validation, y_pred2)
+    print(cnf_matrix)
 
 
     print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
@@ -212,11 +213,13 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     print('prediction 4:', x_test[3], predictions[3], "Correct label:", y_test[3])
     print('prediction 5:', x_test[4], predictions[4], "Correct label:", y_test[4])
     print('prediction 6:', x_test[5], predictions[5], "Correct label:", y_test[5])
+    print()
 
-    # Plot training & validation loss values
     length_test = []
     for i in range(len(x_test)):
         length_test.append(len(x_test[i]))
+    print(length_test)
+    print(len(length_test))
 
     count_10 = []
     count_20 = []
@@ -225,97 +228,144 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     count_50 = []
     count_60 = []
     count_70 = []
-    count_80 = []
-    count_90 = []
-    count_100 = []
-    count_150 = []
+
     for i in range(len(length_test)):
-        if length_test[i] <= 10:
+        if length_test[i] < 21:
             count_10.append(i)
-        if 10 < length_test[i] <= 20:
+        if 20 < length_test[i] < 41:
             count_20.append(i)
-        if 20 < length_test[i] <= 30:
+        if 40 < length_test[i] < 61:
             count_30.append(i)
-        if 30 < length_test[i] <= 40:
+        if 60 < length_test[i] < 81:
             count_40.append(i)
-        if 40 < length_test[i] <= 50:
+        if 80 < length_test[i] < 101:
             count_50.append(i)
-        if 50 < length_test[i] <= 60:
+        if 100 < length_test[i] < 121:
             count_60.append(i)
-        if 60 < length_test[i] <= 70:
+        if length_test[i] > 120:
             count_70.append(i)
-        if 70 < length_test[i] <= 80:
-            count_80.append(i)
-        if 80 < length_test[i] <= 90:
-            count_90.append(i)
-        if 90 < length_test[i] <= 100:
-            count_100.append(i)
-        if length_test[i] > 100:
-            count_150.append(i)
 
+    print(len(count_10)+len(count_30)+len(count_50)+len(count_50)+len(count_60)+len(count_70)+len(count_20))
+    #---------------RANGE 0-20 CHARACTERS-------------
     print(count_10)
-
-    print(x_test[count_10])
-    print(y_test[count_10])
+    print([labels[label] for label in y_test[count_10]])
     pred_10 = model.predict(x_test_pad[count_10])
     new_pred_10 = []
+    tp1 = 0 #true positives/correctly classified
+
     for i in range(len(pred_10)):
-        a = tf.argmax(pred_10[i])
+        a = np.argmax(pred_10[i])
         new_pred_10.append(a)
-    print(new_pred_10)
+        if new_pred_10[i] == y_test[count_10[i]]:
+            tp1 = tp1 + 1
+    print([labels[label] for label in new_pred_10])
+    print("Number of tweets of character length 0-20:", len(pred_10))
+    print("Accuracy for tweet lengths 0-20 characters:", (tp1/len(pred_10)))
 
-    # print(count_20)
-    # acc_20, loss_20 = model.evaluate(x_test_pad[count_20], y_test[count_20], verbose=1)
-    # print("Loss: %.2f" % loss_20)
-    # print("Test Accuracy: %.2f" % acc_20)
-    #
-    # print(count_30)
-    # acc_30, loss_30 = model.evaluate(x_test_pad[count_30], y_test[count_30], verbose=1)
-    # print("Loss: %.2f" % loss_30)
-    # print("Test Accuracy: %.2f" % acc_30)
-    #
-    # print(count_40)
-    # acc_40, loss_40 = model.evaluate(x_test_pad[count_40], y_test[count_40], verbose=1)
-    # print("Loss: %.2f" % loss_40)
-    # print("Test Accuracy: %.2f" % acc_40)
-    #
-    # print(count_50)
-    # acc_50, loss_50 = model.evaluate(x_test_pad[count_50], y_test[count_50], verbose=1)
-    # print("Loss: %.2f" % loss_50)
-    # print("Test Accuracy: %.2f" % acc_50)
-    #
-    # print(count_60)
-    # acc_60, loss_60 = model.evaluate(x_test_pad[count_60], y_test[count_60], verbose=1)
-    # print("Loss: %.2f" % loss_60)
-    # print("Test Accuracy: %.2f" % acc_60)
-    #
-    # print(count_70)
-    # acc_70, loss_70 = model.evaluate(x_test_pad[count_70], y_test[count_70], verbose=1)
-    # print("Loss: %.2f" % loss_70)
-    # print("Test Accuracy: %.2f" % acc_70)
-    #
-    # print(count_80)
-    # acc_80, loss_80 = model.evaluate(x_test_pad[count_80], y_test[count_80], verbose=1)
-    # print("Loss: %.2f" % loss_80)
-    # print("Test Accuracy: %.2f" % acc_80)
-    #
-    # print(count_90)
-    # acc_90, loss_90 = model.evaluate(x_test_pad[count_90], y_test[count_90], verbose=1)
-    # print("Loss: %.2f" % loss_90)
-    # print("Test Accuracy: %.2f" % acc_90)
-    #
-    # print(count_100)
-    # acc_100, loss_100 = model.evaluate(x_test_pad[count_100], y_test[count_100], verbose=1)
-    # print("Loss: %.2f" % loss_100)
-    # print("Test Accuracy: %.2f" % acc_100)
-    #
-    # print(count_150)
-    # acc_150, loss_150 = model.evaluate(x_test_pad[count_150], y_test[count_150], verbose=1)
-    # print("Loss: %.2f" % loss_150)
-    # print("Test Accuracy: %.2f" % acc_150)
+    # ---------------RANGE 20-40 CHARACTERS-------------
+    print(count_20)
+    print([labels[label] for label in y_test[count_20]])
+    pred_20 = model.predict(x_test_pad[count_20])
+    new_pred_20 = []
+    tp2 = 0 #true positives/correctly classified
+    for i in range(len(pred_20)):
+        a = np.argmax(pred_20[i])
+        new_pred_20.append(a)
+        if new_pred_20[i] == y_test[count_20[i]]:
+            tp2 = tp2 + 1
+    print([labels[label] for label in new_pred_20])
+    print("Number of tweets of character length 20-40:", len(pred_20))
+    print("Accuracy for tweet lengths 20-40 characters:", (tp2/len(pred_20)))
 
+    # ---------------RANGE 40-60 CHARACTERS-------------
+    print(count_30)
+    print([labels[label] for label in y_test[count_30]])
+    pred_30 = model.predict(x_test_pad[count_30])
+    new_pred_30 = []
+    tp3 = 0 #true positives/correctly classified
+    for i in range(len(pred_30)):
+        a = np.argmax(pred_30[i])
+        new_pred_30.append(a)
+        if new_pred_30[i] == y_test[count_30[i]]:
+            tp3 = tp3 + 1
+    print([labels[label] for label in new_pred_30])
+    print("Number of tweets of character length 40-60:", len(pred_30))
+    print("Accuracy for tweet lengths 40-60 characters:", (tp3/len(pred_30)))
 
+    # ---------------RANGE 60-80 CHARACTERS-------------
+    print(count_40)
+    print([labels[label] for label in y_test[count_40]])
+    pred_40 = model.predict(x_test_pad[count_40])
+    new_pred_40 = []
+    tp4 = 0 #true positives/correctly classified
+    for i in range(len(pred_40)):
+        a = np.argmax(pred_40[i])
+        new_pred_40.append(a)
+        if new_pred_40[i] == y_test[count_40[i]]:
+            tp4 = tp4 + 1
+    print([labels[label] for label in new_pred_40])
+    print("Number of tweets of character length 60-80:", len(pred_40))
+    print("Accuracy for tweet lengths 60-80 characters:", (tp4/len(pred_40)))
 
+    # ---------------RANGE 80-100 CHARACTERS-------------
+    print(count_50)
+    print([labels[label] for label in y_test[count_50]])
+    pred_50 = model.predict(x_test_pad[count_50])
+    new_pred_50 = []
+    tp5 = 0 #true positives/correctly classified
+    for i in range(len(pred_50)):
+        a = np.argmax(pred_50[i])
+        new_pred_50.append(a)
+        if new_pred_50[i] == y_test[count_50[i]]:
+            tp5 = tp5 + 1
+    print([labels[label] for label in new_pred_50])
+    print("Number of tweets of character length 80-100:", len(pred_50))
+    print("Accuracy for tweet lengths 80-100 characters:", (tp5/len(pred_50)))
+
+    # ---------------RANGE 100-120 CHARACTERS-------------
+    print(count_60)
+    print([labels[label] for label in y_test[count_60]])
+    pred_60 = model.predict(x_test_pad[count_60])
+    new_pred_60 = []
+    tp6 = 0 #true positives/correctly classified
+    for i in range(len(pred_60)):
+        a = np.argmax(pred_60[i])
+        new_pred_60.append(a)
+        if new_pred_60[i] == y_test[count_60[i]]:
+            tp6 = tp6 + 1
+    print([labels[label] for label in new_pred_60])
+    print("Number of tweets of character length 100-120:", len(pred_60))
+    print("Accuracy for tweet lengths 100-120 characters:", (tp6/len(pred_60)))
+
+    # ---------------RANGE >120 CHARACTERS-------------
+    print(count_70)
+    print([labels[label] for label in y_test[count_70]])
+    pred_70 = model.predict(x_test_pad[count_70])
+    new_pred_70 = []
+    tp7 = 0 #true positives/correctly classified
+    for i in range(len(pred_70)):
+        a = np.argmax(pred_70[i])
+        new_pred_70.append(a)
+        if new_pred_70[i] == y_test[count_70[i]]:
+            tp7 = tp7 + 1
+    print([labels[label] for label in new_pred_70])
+    print("Number of tweets of character length >120:", len(pred_70))
+    print("Accuracy for tweet lengths >120 characters:", (tp7/len(pred_70)))
+
+    #--------------------------------------------------------------
+    print()
+    objects = ('0-20', '20-40', '40-60', '60-80', '80-100', '100-120', '120-140')
+    y_pos = np.arange(len(objects))
+    performance = [(tp1/len(pred_10)), (tp2/len(pred_20)), (tp3/len(pred_30)), (tp4/len(pred_40)), (tp5/len(pred_50)),
+                   (tp6/len(pred_60)), (tp7/len(pred_70))]
+
+    plt.bar(y_pos, performance, align='center', alpha=0.5)
+    plt.xticks(y_pos, objects)
+    plt.ylabel('Accuracy')
+    plt.xlabel('Character length of tweet')
+    plt.title('Accuracy for different character lengths of tweets')
+    plt.savefig('bar_chart.png')
+    plt.close()
 
 
     new_line = "perfekta tweets - cool"
@@ -371,7 +421,7 @@ def main():
     print("Maximum integer value of a character in: test set:", max_dict_value(x_test_pad))
 
     run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_validation_pad, y_validation, x_test_pad,
-             y_test, x_test, tokenizer, num_epochs)
+             y_test, x_test, tokenizer, num_epochs, class_names)
 
 
 if __name__ == "__main__":
