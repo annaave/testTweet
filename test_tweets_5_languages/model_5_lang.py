@@ -12,13 +12,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, plot_confusion_matrix
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+import seaborn as sn
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 
 vocab_size = 300
-embedding_dim = 64
+embedding_dim = 128
 max_length = 150
-num_epochs = 5
+num_epochs = 15
+
 trunc_type = 'post'
 padding_type = 'post'
 oov_tok = '<OOV>'
@@ -63,8 +65,8 @@ def read_all(class_names):
     all_data = pd.concat([df1, df2, df3, df4, df5], ignore_index=True, sort=False)
 
     # Clean tweet data
-    for i in range(len(all_data)):
-        all_data['tweets'][i] = clean_up(all_data['tweets'][i])
+    #for i in range(len(all_data)):
+     #   all_data['tweets'][i] = clean_up(all_data['tweets'][i])
 
     all_data = all_data.sample(frac=1).reset_index(drop=True)
     all_data['language'] = all_data['language'].map(d, na_action='ignore')
@@ -182,7 +184,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_2000_April_29_128_char.png')
+    plt.savefig('5_lang_2000_May_04_128_char.png')
     plt.close()
 
     # Plot training & validation loss values
@@ -192,7 +194,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
-    plt.savefig('5_lang_loss_2000_April_29_128_char.png')
+    plt.savefig('5_lang_loss_2000_May_04_128_char.png')
     plt.close()
 
     #y_pred = model.predict_classes(x_test_pad)
@@ -204,6 +206,17 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     cnf_matrix = confusion_matrix(y_validation, y_pred2)
     print(cnf_matrix)
 
+    y_validation_cm = [labels[row] for row in y_validation]
+    y_pred2_cm = [labels[row] for row in y_pred2]
+    data_cn = {'y_Actual': y_validation_cm, 'y_Predicted': y_pred2_cm}
+    df = pd.DataFrame(data_cn, columns=['y_Actual', 'y_Predicted'])
+    confusion_matrix_2 = pd.crosstab(df['y_Actual'], df['y_Predicted'], rownames=['True labels'], colnames=['Predicted labels'])
+
+    plt.title("Confusion matrix over test data")
+    sn.heatmap(confusion_matrix_2, annot=True, fmt='d', yticklabels=True)
+    plt.yticks(rotation=0)
+    plt.savefig('confusion_matrix.png')
+    plt.close()
 
     print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
     predictions = model.predict(x_test_pad)
@@ -230,22 +243,22 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     count_70 = []
 
     for i in range(len(length_test)):
-        if length_test[i] < 21:
+        if length_test[i] <= 20:
             count_10.append(i)
-        if 20 < length_test[i] < 41:
+        if 20 < length_test[i] <= 40:
             count_20.append(i)
-        if 40 < length_test[i] < 61:
+        if 40 < length_test[i] <= 60:
             count_30.append(i)
-        if 60 < length_test[i] < 81:
+        if 60 < length_test[i] <= 80:
             count_40.append(i)
-        if 80 < length_test[i] < 101:
+        if 80 < length_test[i] <= 100:
             count_50.append(i)
-        if 100 < length_test[i] < 121:
+        if 100 < length_test[i] <= 120:
             count_60.append(i)
         if length_test[i] > 120:
             count_70.append(i)
 
-    print(len(count_10)+len(count_30)+len(count_50)+len(count_50)+len(count_60)+len(count_70)+len(count_20))
+    print(len(count_10)+len(count_20)+len(count_30)+len(count_40)+len(count_50)+len(count_60)+len(count_70))
     #---------------RANGE 0-20 CHARACTERS-------------
     print(count_10)
     print([labels[label] for label in y_test[count_10]])
