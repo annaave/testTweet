@@ -111,3 +111,7 @@ gp_result = gp_minimize(func=fitness,
 model = create_model(gp_result.x[0],gp_result.x[1],gp_result.x[2],gp_result.x[3],gp_result.x[4],gp_result.x[5])
 model.fit(x_train_pad,y_train, epochs=3)
 model.evaluate(x_test_pad,y_test)
+
+
+#https://medium.com/@crawftv/parameter-hyperparameter-tuning-with-bayesian-optimization-7acf42d348e1
+#https://towardsdatascience.com/finding-the-right-architecture-for-neural-network-b0439efa4587
