@@ -19,7 +19,7 @@ from keras.callbacks import EarlyStopping
 vocab_size = 300
 embedding_dim = 128
 max_length = 150
-num_epochs = 15
+num_epochs = 100
 
 trunc_type = 'post'
 padding_type = 'post'
@@ -66,7 +66,7 @@ def read_all(class_names):
 
     # Clean tweet data
     #for i in range(len(all_data)):
-     #   all_data['tweets'][i] = clean_up(all_data['tweets'][i])
+        #all_data['tweets'][i] = clean_up(all_data['tweets'][i])
 
     all_data = all_data.sample(frac=1).reset_index(drop=True)
     all_data['language'] = all_data['language'].map(d, na_action='ignore')
@@ -117,10 +117,11 @@ def remove_emojies(text):
 
 def split_data(frame):
     train, validation = train_test_split(frame, test_size=0.20)
-    validation, test = train_test_split(validation, test_size=0.5)
+    #validation, test = train_test_split(validation, test_size=0.5)
     train = train.reset_index(drop=True)
     validation = validation.reset_index(drop=True)
-    test = test.reset_index(drop=True)
+    #test = test.reset_index(drop=True)
+    test = validation
     return train, validation, test
 
 
@@ -163,7 +164,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     model.add(Dense(len(class_names), activation='softmax'))
     model.summary()
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
-    es = EarlyStopping(monitor='val_loss', min_delta=0.01, patience=240, mode='min', restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', min_delta=0.01, patience=30, mode='min', restore_best_weights=True)
 
     history = model.fit(x_train_pad, y_train, batch_size=32, epochs=num_epochs,
                         validation_data=(x_validation_pad, y_validation), verbose=1, callbacks=[es])
@@ -184,7 +185,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_2000_May_04_128_char.png')
+    plt.savefig('5_lang_2000_May_05.png')
     plt.close()
 
     # Plot training & validation loss values
@@ -194,7 +195,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
-    plt.savefig('5_lang_loss_2000_May_04_128_char.png')
+    plt.savefig('5_lang_loss_2000_May_05.png')
     plt.close()
 
     #y_pred = model.predict_classes(x_test_pad)
@@ -215,7 +216,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.title("Confusion matrix over test data")
     sn.heatmap(confusion_matrix_2, annot=True, fmt='d', yticklabels=True)
     plt.yticks(rotation=0)
-    plt.savefig('confusion_matrix.png')
+    plt.savefig('confusion_matrix_May_05.png')
     plt.close()
 
     print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
@@ -377,7 +378,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Character length of tweet')
     plt.title('Accuracy for different character lengths of tweets')
-    plt.savefig('bar_chart.png')
+    plt.savefig('bar_chart_May_05_100epochs.png')
     plt.close()
 
 
