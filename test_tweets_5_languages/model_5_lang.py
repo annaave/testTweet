@@ -15,11 +15,12 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import seaborn as sn
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
+import os
 
 vocab_size = 300
 embedding_dim = 128
 max_length = 150
-num_epochs = 100
+num_epochs = 15
 
 trunc_type = 'post'
 padding_type = 'post'
@@ -57,16 +58,16 @@ def read_all(class_names):
     df5 = df5.drop(index=0)
     df5 = df5.reset_index(drop=True)
 
-    # df6 = (pd.read_csv("2000_Ger_tweets_label.csv", usecols=['tweets', 'language']).dropna(
-    #     subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
-    # df6 = df6.drop(index=0)
-    # df6 = df6.reset_index(drop=True)
+    df6 = (pd.read_csv("2000_Ger_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+        subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
+    df6 = df6.drop(index=0)
+    df6 = df6.reset_index(drop=True)
 
     all_data = pd.concat([df1, df2, df3, df4, df5], ignore_index=True, sort=False)
 
     # Clean tweet data
-    #for i in range(len(all_data)):
-        #all_data['tweets'][i] = clean_up(all_data['tweets'][i])
+    for i in range(len(all_data)):
+        all_data['tweets'][i] = clean_up(all_data['tweets'][i])
 
     all_data = all_data.sample(frac=1).reset_index(drop=True)
     all_data['language'] = all_data['language'].map(d, na_action='ignore')
@@ -164,10 +165,14 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     model.add(Dense(len(class_names), activation='softmax'))
     model.summary()
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
-    es = EarlyStopping(monitor='val_loss', min_delta=0.01, patience=30, mode='min', restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', min_delta=0.01, patience=240, mode='min', restore_best_weights=True)
 
     history = model.fit(x_train_pad, y_train, batch_size=32, epochs=num_epochs,
                         validation_data=(x_validation_pad, y_validation), verbose=1, callbacks=[es])
+
+    # Save the entire model as a SavedModel.
+    model.save('saved_model/my_model')
+
 
     loss, acc = model.evaluate(x_validation_pad, y_validation, verbose=1)
     print("Loss: %.2f" % loss)
@@ -182,10 +187,11 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.plot(history.history['val_acc'])
     plt.axhline(y=0.9, color='r', linestyle='--')
     plt.title('Model accuracy')
+    plt.rc('font', size=14)
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
     plt.legend(['Training', 'Validation'], loc='upper left')
-    plt.savefig('5_lang_2000_May_05.png')
+    plt.savefig('5_lang_2000_May_06.png')
     plt.close()
 
     # Plot training & validation loss values
@@ -195,7 +201,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
-    plt.savefig('5_lang_loss_2000_May_05.png')
+    plt.savefig('5_lang_loss_2000_May_06.png')
     plt.close()
 
     #y_pred = model.predict_classes(x_test_pad)
@@ -214,9 +220,10 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     confusion_matrix_2 = pd.crosstab(df['y_Actual'], df['y_Predicted'], rownames=['True labels'], colnames=['Predicted labels'])
 
     plt.title("Confusion matrix over test data")
-    sn.heatmap(confusion_matrix_2, annot=True, fmt='d', yticklabels=True)
+    sn.heatmap(confusion_matrix_2, annot=True, fmt='g', xticklabels=True, yticklabels=True, cmap='Blues')
     plt.yticks(rotation=0)
-    plt.savefig('confusion_matrix_May_05.png')
+    plt.xticks(rotation=0)
+    plt.savefig('confusion_matrix_May_06.png')
     plt.close()
 
     print('\n# Generate predictions for 6 samples from the hold-out dataset (testing set)')
@@ -378,7 +385,7 @@ def run_lstm(vocab_size, embedding_dim, class_names, x_train_pad, y_train, x_val
     plt.ylabel('Accuracy')
     plt.xlabel('Character length of tweet')
     plt.title('Accuracy for different character lengths of tweets')
-    plt.savefig('bar_chart_May_05_100epochs.png')
+    plt.savefig('bar_chart_May_06_15epochs.png')
     plt.close()
 
 

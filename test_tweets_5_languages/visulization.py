@@ -1,6 +1,8 @@
 import pandas as pd
 import re
+import seaborn as sn
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def read_all(class_names):
@@ -116,15 +118,22 @@ def main():
     print("Maximum length of tweet:", max_len)
     print("minimum lenth of tweet:", min_len)
     print(all_data)
+    all_data.to_csv('all_data_tweet_length.csv')
 
     s = all_data['tweet length']
-    ax = s.hist(bins=20)
+    ax = s.hist(bins=20, grid=False)
     ax.set_xlabel('Number of characters')
     ax.set_ylabel('Number of tweets')
     ax.set_title('Distribution of tweet lengths')
     fig = ax.get_figure()
-    fig.savefig('histo.png')
+    fig.savefig('histogram.png')
+    plt.close()
 
+    sn.distplot(all_data['tweet length'])
+    plt.savefig('pairplot.png')
+    plt.close()
 
+    plt.scatter(all_data['tweet length'], all_data['language'])
+    plt.savefig('scatter.png')
 if __name__ == "__main__":
     main()

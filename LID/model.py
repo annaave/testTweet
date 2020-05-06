@@ -29,8 +29,12 @@ def main():
     vocab_size = 300
     embedding_dim = 64
     num_epochs = 5
-    class_names = ["English", "Swedish", "Spanish", "Portuguese", "Russian"]
+
+    class_names = ["English", "Swedish", "Spanish", "Portuguese", "Russian", "German"]
     all_data = read_all(class_names)
+    all_data.to_csv("all_data_labels_random.csv", index=False)
     print(all_data)
+
+
 if __name__ == "__main__":
     main()

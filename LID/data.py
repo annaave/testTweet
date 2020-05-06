@@ -3,7 +3,7 @@ import pandas as pd
 
 def read_all(class_names):
     max_rows = 10000
-    d = dict(zip(class_names, range(0, 5)))
+    d = dict(zip(class_names, range(0, 6)))
     print(d)
     pd.options.display.max_colwidth = 1000
 
@@ -32,12 +32,12 @@ def read_all(class_names):
     df5 = df5.drop(index=0)
     df5 = df5.reset_index(drop=True)
 
-    # df6 = (pd.read_csv("2000_Ger_tweets_label.csv", usecols=['tweets', 'language']).dropna(
-    #     subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
-    # df6 = df6.drop(index=0)
-    # df6 = df6.reset_index(drop=True)
+    df6 = (pd.read_csv("2000_Ger_tweets_label.csv", usecols=['tweets', 'language']).dropna(
+        subset=['tweets', 'language']).assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
+    df6 = df6.drop(index=0)
+    df6 = df6.reset_index(drop=True)
 
-    all_data = pd.concat([df1, df2, df3, df4, df5], ignore_index=True, sort=False)
+    all_data = pd.concat([df1, df2, df3, df4, df5, df6], ignore_index=True, sort=False)
 
     all_data = all_data.sample(frac=1).reset_index(drop=True)
     all_data['language'] = all_data['language'].map(d, na_action='ignore')
