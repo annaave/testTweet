@@ -135,5 +135,7 @@ def main():
 
     plt.scatter(all_data['tweet length'], all_data['language'])
     plt.savefig('scatter.png')
+
+
 if __name__ == "__main__":
     main()

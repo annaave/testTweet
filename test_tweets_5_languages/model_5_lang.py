@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping
 import os
 
-vocab_size = 300
+vocab_size = 1000
 embedding_dim = 128
 max_length = 150
 num_epochs = 15
@@ -82,9 +82,9 @@ def clean_up(line):
     line = re.sub(r'http\S+', '', line)
 
     # lowercase all letters
-    words = line.split()
-    words = [word.lower() for word in words]
-    line = ' '.join(words)
+    # words = line.split()
+    # words = [word.lower() for word in words]
+    # line = ' '.join(words)
 
     # remove emojis
     line = remove_emojies(line)
