@@ -121,7 +121,7 @@ def main():
     all_data.to_csv('all_data_tweet_length.csv')
 
     s = all_data['tweet length']
-    ax = s.hist(bins=20, grid=False)
+    ax = s.hist(bins=10, grid=True)
     ax.set_xlabel('Number of characters')
     ax.set_ylabel('Number of tweets')
     ax.set_title('Distribution of tweet lengths')
@@ -129,13 +129,9 @@ def main():
     fig.savefig('histogram.png')
     plt.close()
 
-    sn.distplot(all_data['tweet length'])
+    sn.pairplot(all_data)
     plt.savefig('pairplot.png')
     plt.close()
-
-    plt.scatter(all_data['tweet length'], all_data['language'])
-    plt.savefig('scatter.png')
-
 
 if __name__ == "__main__":
     main()

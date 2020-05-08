@@ -412,6 +412,7 @@ def main():
     x_test = np.asarray([np.asarray(text) for text in test['tweets']])
     y_test = np.asarray([np.asarray(label) for label in test['language']])
 
+    print(x_train)
     print(x_train[0])
     print(x_train[1])
     print(all_data['tweets'])
