@@ -3,69 +3,75 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 from tensorflow.keras.layers import LSTM, Embedding, Bidirectional
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 import fasttext
+from sklearn.metrics import confusion_matrix, classification_report
 
 
 # Class to create and train a machine learning model
 class TrainModel:
-    def __init__(self):
-        self.model = Sequential()
+    def __init__(self, model_type, vocab_size, embedding_dim, class_names, bat_size, num_epochs):
+        if model_type == 'lstm':
+            self.vocab_size = vocab_size
+            self.embedding_dim = embedding_dim
+            self.class_names = class_names
+            self.bat_size = bat_size
+            self.num_epochs = num_epochs
+            self.model = Sequential()
+            self.model.add(Embedding(vocab_size, embedding_dim))
+            self.model.add(Bidirectional(LSTM(embedding_dim)))
+            self.model.add(Dense(embedding_dim, activation='relu'))
+            self.model.add(Dense(len(class_names), activation='softmax'))
+            self.model.summary()
+            self.model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
-    def create_lstm_model(self, vocab_size, embedding_dim, class_names):
-        self.model.add(Embedding(vocab_size, embedding_dim))
-        self.model.add(Bidirectional(LSTM(embedding_dim)))
-        self.model.add(Dense(embedding_dim, activation='relu'))
-        self.model.add(Dense(len(class_names), activation='softmax'))
-        self.model.summary()
-        self.model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
-
-        return self.model
-
-    def create_train_fasttext_model(self, train_filename):
-        self.model = fasttext.train_supervised(train_filename, min_count=1, minn=1, lr=0.5, epoch=30, ws=3,
-                                               label_prefix='__label__', dim=50)
-        print(self.model)
-
-    def train_model(self, bat_size, num_epochs, x_train_pad, y_train, x_validation_pad, y_validation):
-        history = self.model.fit(x_train_pad, y_train, batch_size=bat_size, epochs=num_epochs,
+    def train_model(self, x_train_pad, y_train, x_validation_pad, y_validation, history_path):
+        history = self.model.fit(x_train_pad, y_train, batch_size=self.bat_size, epochs=self.num_epochs,
                                  validation_data=(x_validation_pad, y_validation), verbose=1)
-
-        np.save('/home/myuser/testTweet/LID/saved_model/history_cleaned_data.npy', history.history)
+        np.save(history_path, history.history)
 
     def save_model(self, name):
-        file_path = '/home/myuser/testTweet/LID/saved_model_cleaned_data/' + name
+        file_path = '/home/myuser/testTweet/LID/saved_model/' + name
         self.model.save(file_path)
 
-    @staticmethod
-    def tokenize(vocab_size, oov_tok, trunc_type, padding_type, max_length):
-        train = pd.read_csv('training_data.csv')
-        validation = pd.read_csv('validation_data.csv')
-        test = pd.read_csv('test_data.csv')
-        x_train = np.asarray([np.asarray(text) for text in train['tweets']])
-        y_train = np.asarray([np.asarray(label) for label in train['language']])
 
-        x_validation = np.asarray([np.asarray(text) for text in validation['tweets']])
-        y_validation = np.asarray([np.asarray(label) for label in validation['language']])
+class FastText:
+    def __init__(self, file_name, train_file, labels):
+        self.file_name = file_name
+        train_data = pd.read_csv(train_file)
+        train_data = [labels[row['language']] for row in train_data]
+        self.train_data = train_data
 
-        x_test = np.asarray([np.asarray(text) for text in test['tweets']])
-        y_test = np.asarray([np.asarray(label) for label in test['language']])
-        tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok, char_level=True)
-        # tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok)
-        tokenizer.fit_on_texts(train['tweets'])
-        word_index = tokenizer.word_index
-        print(dict(list(word_index.items())[0:10]))
-        train_sequences = tokenizer.texts_to_sequences(x_train)
-        x_train_pad = pad_sequences(train_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
-        validation_sequences = tokenizer.texts_to_sequences(x_validation)
-        x_validation_pad = pad_sequences(validation_sequences, maxlen=max_length, padding=padding_type,
-                                         truncating=trunc_type)
-        test_sequences = tokenizer.texts_to_sequences(x_test)
-        x_test_pad = pad_sequences(test_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
+    def create_train_file(self):
+        """ Creates a text file such that for each tri-gram: <__label__, trigram>
+                where label is the language. FastText takes a file as input for training.
+                Returns: File name of the created file.
+            """
+        train_file = open(self.file_name, "w+")
+        for i in range(len(self.train_data)):
+            label = "__label__" + self.train_data["language"].iloc[i]
+            text = " ".join(self.train_data["tweets"].iloc[i])
+            train_file.write(label + " " + text + "\n")
 
-        return x_train, x_train_pad, y_train, x_validation, x_validation_pad, y_validation, x_test, x_test_pad, y_test
+        train_file.close()
+        return self.file_name
 
+    def train_fast_text_model(self):
+        model = fasttext.train_supervised(self.file_name, wordNgrams=0, min_count=1, minn=1, lr=0.5, epoch=30,
+                                          ws=3, label_prefix='__label__', dim=50)
+        print(model)
+        return model
+
+    def get_test_pred(self, test_set, model):
+        """
+        Input: TestSet : <Language, WordTrigrams> Pairs
+        Ouput: List of <ActualLabel, PredictedLabel>
+        """
+        y_actual, y_pred = [], []
+        for i in range(len(test_set)):
+            y_actual.append("__label__" + test_set["language"].iloc[i])
+            pred = model.predict([" ".join(test_set["tweets"].iloc[i])])[0][0]
+            y_pred.append(pred)
+        return [y_actual, y_pred]
 
 def main():
     vocab_size = 300
@@ -78,13 +84,25 @@ def main():
     oov_tok = '<OOV>'
 
     class_names = ["English", "Swedish", "Spanish", "Portuguese", "Russian"]
+
+
+    #----- LSTM model -----
     lstm_model = TrainModel()
     lstm_model.create_lstm_model(vocab_size, embedding_dim, class_names)
     x_train, x_train_pad, y_train, x_validation, x_validation_pad, y_validation, x_test, x_test_pad, y_test =\
         lstm_model.tokenize(vocab_size, oov_tok, trunc_type, padding_type, max_length)
 
-    history = lstm_model.train_model(bat_size, num_epochs, x_train_pad, y_train, x_validation_pad, y_validation)
-    lstm_model.save_model("lstm_model")
+    # history_path = '/home/myuser/testTweet/LID/saved_model/history_not_preprocessed.npy'
+    # lstm_model.train_model(bat_size, num_epochs, x_train_pad, y_train, x_validation_pad, y_validation, history_path)
+    # lstm_model.save_model("lstm_model_not_preprocessed")
+
+    # ----- fastText model -----
+    fast_text = FastText('fastText_training_data.txt', '/home/myuser/testTweet/LID/data/2000/training_data_not_cleaned.csv', class_names)
+    fast_text.create_train_file()
+    fast_text__model = fast_text.train_fast_text_model()
+    y_actual, y_pred = fast_text.get_test_pred(y_test, fast_text__model)
+    print(confusion_matrix(y_actual, y_pred))
+    print(classification_report(y_actual, y_pred))
 
 
 if __name__ == "__main__":
