@@ -6,119 +6,161 @@ from os import path
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+"""
+Preprocessing class which reads collected text data, adds labels to it and 
+convert it to the desired format for further modelling. As for now, the class 
+can preprocess data for LSTM models and fastText models.
+"""
+
 
 class Preprocess:
-    def __init__(self, files, class_names, vocab_size):
-        self.files_df = pd.DataFrame()
-        self.df = pd.DataFrame()
-        self.class_names = class_names
-        self.vocab_size = vocab_size
-        with open(files) as f:
-            self.files_df = pd.read_csv(files, sep=',', engine='python', usecols=['file', 'language'])
+    def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size=300,
+                 oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150):
+        self.model_type = model_type
+        try:
+            if self.model_type == 'LSTM' or self.model_type == 'fastText':
+                self.max_rows = 5000    # Maximum number of rows for each language dataset added to the total dataset
+                pd.options.display.max_colwidth = 1000  # Displaying longer lines when printing dataFrames
+                self.file_names = pd.DataFrame()
+                self.data = pd.DataFrame()
+                self.class_names = class_names  # The names of the classes/labels for all the data samples
+                self.vocab_size = vocab_size
+                self.oov_tok = oov_tok
+                self.trunc_type = trunc_type
+                self.padding_type = padding_type
+                self.max_length = max_length    # Maximum length of a preprocessed data sample
+                self.raw_data_path = raw_data_path
+                self.label_data_path = label_data_path
+                with open(files) as f:
+                    self.file_names = pd.read_csv(files, sep=',', engine='python', usecols=['file', 'language'])
 
-    def add_labels(self, file_path):
-        language = []
-        readable_files = []
-        for i in range(len(self.files_df)):
-            language.append(self.files_df['language'][i])
+                if self.model_type == 'fastText':
+                    self.fasttext_train_file = 'training_data_fasttext.txt'
+            else:
+                raise ValueError('Invalid model type')
+        except ValueError as exp:
+            print('Only LSTM or fastText are valid model_types!')
 
-        for i in range(len(self.files_df)):
-            path_file = file_path + self.files_df['file'][i]
-            data = pd.read_csv(str(path_file), sep='\t', header=None)
-            data.columns = ["tweets"]
-            data["language"] = language[i]
-            data.to_csv("labeled_" + str(self.files_df['language'][i]) + ".csv", index=False)
-            string = "labeled_" + str(self.files_df['language'][i]) + ".csv"
-            readable_files.append(string)
-        frame = pd.DataFrame(readable_files)
-        frame.columns = ["file"]
-        frame.to_csv("data_readable_files.csv", index=False)
+    # Function to add labels to every data sample and create a
+    # file with a list of the names of the new labeled files.
+    def add_labels(self):
+        if path.exists("data_readable_files.csv"):
+            print('Files with labels already exists!')
+        else:
+            language = []
+            readable_files = []
+            for i in range(len(self.file_names)):   # Retrieve the language for each corresponding dataset
+                language.append(self.file_names['language'][i])
+
+            for i in range(len(self.file_names)):   # Create a new file with the label with every data sample
+                path_file = self.raw_data_path + self.file_names['file'][i]
+                data = pd.read_csv(str(path_file), sep='\t', header=None)
+                data.columns = ["tweets"]
+                data["language"] = language[i]
+                data.to_csv(self.label_data_path + "labeled_" + str(self.file_names['language'][i]) + ".csv", index=False)
+                string = "labeled_" + str(self.file_names['language'][i]) + ".csv"
+                readable_files.append(string)
+            frame = pd.DataFrame(readable_files)
+            frame.columns = ["file"]
+            # Save a file with a list of all the dataset files with labeled data samples
+            frame.to_csv("data_readable_files.csv", index=False)
 
     def read_all_files(self):
-        max_rows = 5000
         d = dict(zip(self.class_names, range(0, 5)))
         if path.exists("data_readable_files.csv"):
             labeled_files = pd.read_csv("data_readable_files.csv")
             for i in range(len(labeled_files)):
-                df_new = (pd.read_csv(labeled_files["file"][i], usecols=['tweets', 'language']).dropna(subset=['tweets', 'language'])
-                          .assign(tweets=lambda x: x.tweets.str.strip()).head(max_rows))
+                df_new = (pd.read_csv(self.label_data_path + labeled_files["file"][i], usecols=['tweets', 'language']).dropna(subset=['tweets', 'language'])
+                          .assign(tweets=lambda x: x.tweets.str.strip()).head(self.max_rows))
 
                 df_new = df_new.drop(index=0)
-                self.df = self.df.append(df_new)
+                self.data = self.data.append(df_new)
 
-            self.df['language'] = self.df['language'].map(d, na_action='ignore')
+            if self.model_type == 'LSTM':
+                self.data['language'] = self.data['language'].map(d, na_action='ignore')
 
-            self.df = self.df.sample(frac=1).reset_index(drop=True)
-            self.df.reset_index(drop=True, inplace=True)
+            self.data = self.data.sample(frac=1).reset_index(drop=True)
+            self.data.reset_index(drop=True, inplace=True)
 
         else:
-            print("Create files with labeled data first, with method add_labels()!")
+            print("Create files with labels first, with class method add_labels()!")
 
     def clean_data(self):
-        # Clean tweet data
-        for i in range(len(self.df)):
-            #self.df['tweets'][i] = self.clean_line(self.df['tweets'][i])
-            self.df['tweets'][i] = re.sub(r'http\S+', '', self.df['tweets'][i])
-            self.df['tweets'][i] = remove_emojies(self.df['tweets'][i])
+        # Clean text of url:s and emojies
+        for i in range(len(self.data)):
+            line = re.sub(r'http\S+', '', self.data['tweets'][i])
+            self.data['tweets'][i] = line
+            text = remove_emojies(self.data['tweets'][i])
+            self.data['tweets'][i] = text
 
-    # def clean_line(self, line):
-    #     # remove url
-    #     line = re.sub(r'http\S+', '', line)
-    #
-    #     # remove emojis
-    #     line = self.remove_emojies(line)
-    #
-    #     return line
+    def split_clean_save_data(self, clean_data):
+        if self.model_type == 'LSTM':
+            if clean_data:
+                self.clean_data()
+            train, validation = train_test_split(self.data, test_size=0.20)
+            validation, test = train_test_split(validation, test_size=0.5)
+            train = train.reset_index(drop=True)
+            validation = validation.reset_index(drop=True)
+            test = test.reset_index(drop=True)
+            train = pd.DataFrame(train)
+            validation = pd.DataFrame(validation)
+            test = pd.DataFrame(test)
+            train.to_csv('training_data.csv', index=False)
+            validation.to_csv('validation_data.csv', index=False)
+            test.to_csv('test_data.csv', index=False)
+        if self.model_type == 'fastText':
+            if clean_data:
+                self.clean_data()
+            train, test = train_test_split(self.data, test_size=0.20)
+            train = train.reset_index(drop=True)
+            test = test.reset_index(drop=True)
+            train = pd.DataFrame(train)
+            test = pd.DataFrame(test)
+            self.create_train_file_fasttext(train)
+            test.to_csv('test_data_fasttext.csv', index=False)
 
-    def save_all_data(self):
-        self.df.to_csv('2000_5_all_data_not_preprocessed.csv')
-        train, validation, test = self.split_data()
-        train.to_csv('training_data_not_cleaned.csv')
-        validation.to_csv('validation_data_not_cleaned.csv')
-        test.to_csv('test_data_not_cleaned.csv')
-        self.clean_data()
-        train_clean, validation_clean, test_clean = self.split_data()
-        train_clean.to_csv('training_data_cleaned.csv')
-        validation_clean.to_csv('validation_data_cleaned.csv')
-        test_clean.to_csv('test_data_cleaned.csv')
+    def create_train_file_fasttext(self, train_data):
+        """ Creates a text file such that for each tri-gram: <__label__, trigram>
+                where label is the language. FastText takes a file as input for training.
+                Returns: File name of the created file.
+            """
+        train_file = open(self.fasttext_train_file, "w+")
+        for i in range(len(train_data)):
+            label = "__label__" + train_data["language"].iloc[i]
+            text = " ".join(train_data["tweets"].iloc[i])
+            train_file.write(label + " " + text + "\n")
+        train_file.close()
 
-    def split_data(self):
-        train, validation = train_test_split(self.df, test_size=0.20)
-        validation, test = train_test_split(validation, test_size=0.5)
-        train = train.reset_index(drop=True)
-        validation = validation.reset_index(drop=True)
-        test = test.reset_index(drop=True)
-        train = pd.DataFrame(train)
-        validation = pd.DataFrame(validation)
-        test = pd.DataFrame(test)
-        return train, validation, test
-
-    def tokenize(self, oov_tok, trunc_type, padding_type, max_length):
-        train = pd.read_csv('/home/myuser/testTweet/LID/data/2000/training_data_not_cleaned.csv')
-        validation = pd.read_csv('/home/myuser/testTweet/LID/data/2000/validation_data_not_cleaned.csv')
-        test = pd.read_csv('/home/myuser/testTweet/LID/data/2000/test_data_not_cleaned.csv')
-        x_train = np.asarray([np.asarray(text) for text in train['tweets']])
-        y_train = np.asarray([np.asarray(label) for label in train['language']])
-
-        x_validation = np.asarray([np.asarray(text) for text in validation['tweets']])
-        y_validation = np.asarray([np.asarray(label) for label in validation['language']])
-
-        x_test = np.asarray([np.asarray(text) for text in test['tweets']])
-        y_test = np.asarray([np.asarray(label) for label in test['language']])
-        tokenizer = Tokenizer(num_words=self.vocab_size, oov_token=oov_tok, char_level=True)
-        # tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok)
-        tokenizer.fit_on_texts(train['tweets'])
+    def tokenize_train(self, file_path, char_level):
+        train_data = pd.read_csv(file_path)
+        x_train = np.asarray([np.asarray(text) for text in train_data['tweets']])
+        y_train = np.asarray([np.asarray(label) for label in train_data['language']])
+        tokenizer = Tokenizer(num_words=self.vocab_size, oov_token=self.oov_tok, char_level=char_level)
+        tokenizer.fit_on_texts(train_data['tweets'])
         word_index = tokenizer.word_index
+        print('Created dictionary from tokenizer of training data, here are the top 10 types:')
         print(dict(list(word_index.items())[0:10]))
         train_sequences = tokenizer.texts_to_sequences(x_train)
-        x_train_pad = pad_sequences(train_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
-        validation_sequences = tokenizer.texts_to_sequences(x_validation)
-        x_validation_pad = pad_sequences(validation_sequences, maxlen=max_length, padding=padding_type,
-                                         truncating=trunc_type)
-        test_sequences = tokenizer.texts_to_sequences(x_test)
-        x_test_pad = pad_sequences(test_sequences, maxlen=max_length, padding=padding_type, truncating=trunc_type)
+        x_train_pad = pad_sequences(train_sequences, maxlen=self.max_length, padding=self.padding_type, truncating=self.trunc_type)
+        train_object = {
+            'x_train': x_train,
+            'y_train': y_train,
+            'x_train_pad': x_train_pad
+        }
+        return tokenizer, train_object
 
-        return x_train, x_train_pad, y_train, x_validation, x_validation_pad, y_validation, x_test, x_test_pad, y_test
+    def tokenize(self, file_path, tokenizer):
+        current_data = pd.read_csv(file_path)
+        x_data = np.asarray([np.asarray(text) for text in current_data['tweets']])
+        y_data = np.asarray([np.asarray(label) for label in current_data['language']])
+        data_sequences = tokenizer.texts_to_sequences(x_data)
+        x_data_pad = pad_sequences(data_sequences, maxlen=self.max_length, padding=self.padding_type, truncating=self.trunc_type)
+        data_object = {
+            'x_data': x_data,
+            'y_data': y_data,
+            'x_data_pad': x_data_pad
+        }
+        return data_object
 
 
 def remove_emojies(text):
@@ -140,18 +182,3 @@ def remove_emojies(text):
         "])")
     text = re.sub(emojies, r'', text)
     return text
-
-
-def main():
-    pd.options.display.max_colwidth = 1000
-
-    class_names = ["English", "Swedish", "Spanish", "Portuguese", "Russian"]
-    path_raw_data = "/home/myuser/testTweet/LID/raw_data/2000/"
-    files = Preprocess('2000_5_data_files_LID.csv', class_names)
-    files.read_all_files()
-    print(files.df)
-    files.save_all_data()
-
-
-if __name__ == "__main__":
-    main()
