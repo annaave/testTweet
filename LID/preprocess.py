@@ -15,12 +15,13 @@ can preprocess data for LSTM models and fastText models.
 
 class Preprocess:
     def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size=300,
-                 oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150):
+                 oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150, num_lang=5):
         self.model_type = model_type
         try:
             if self.model_type == 'LSTM' or self.model_type == 'fastText':
                 self.max_rows = 5000    # Maximum number of rows for each language dataset added to the total dataset
                 pd.options.display.max_colwidth = 1000  # Displaying longer lines when printing dataFrames
+                self.num_lang = num_lang
                 self.file_names = pd.DataFrame()
                 self.data = pd.DataFrame()
                 self.class_names = class_names  # The names of the classes/labels for all the data samples
@@ -66,7 +67,7 @@ class Preprocess:
             frame.to_csv("data_readable_files.csv", index=False)
 
     def read_all_files(self):
-        d = dict(zip(self.class_names, range(0, 5)))
+        d = dict(zip(self.class_names, range(0, self.num_lang)))
         if path.exists("data_readable_files.csv"):
             labeled_files = pd.read_csv("data_readable_files.csv")
             for i in range(len(labeled_files)):
@@ -111,13 +112,13 @@ class Preprocess:
         if self.model_type == 'fastText':
             if clean_data:
                 self.clean_data()
-            train, test = train_test_split(self.data, test_size=0.20)
+            train, test = train_test_split(self.data, test_size=0.10)
             train = train.reset_index(drop=True)
             test = test.reset_index(drop=True)
             train = pd.DataFrame(train)
             test = pd.DataFrame(test)
             self.create_train_file_fasttext(train)
-            test.to_csv('test_data_fasttext.csv', index=False)
+            test.to_csv('test_data_fasttext.txt', index=False)
 
     def create_train_file_fasttext(self, train_data):
         """ Creates a text file such that for each tri-gram: <__label__, trigram>
