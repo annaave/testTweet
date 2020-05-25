@@ -14,7 +14,7 @@ can preprocess data for LSTM models and fastText models.
 
 
 class Preprocess:
-    def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size=300,
+    def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size,
                  oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150, num_lang=5):
         self.model_type = model_type
         try:

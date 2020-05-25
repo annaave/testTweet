@@ -2,6 +2,7 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
 from tensorflow.keras.layers import LSTM, Embedding, Bidirectional
+import tensorflow as tf
 
 
 # Class to create and train a Long-Short Term Memory machine learning model
@@ -17,6 +18,7 @@ class TrainModel:
                 self.model = Sequential()
                 self.model.add(Embedding(vocab_size, embedding_dim))
                 self.model.add(Bidirectional(LSTM(embedding_dim)))
+                self.model.add(Dropout(0.2))
                 self.model.add(Dense(embedding_dim, activation='relu'))
                 self.model.add(Dense(len(class_names), activation='softmax'))
                 self.model.summary()
@@ -30,6 +32,12 @@ class TrainModel:
         history = self.model.fit(train_data['x_train_pad'], train_data['y_train'], batch_size=self.bat_size, epochs=self.num_epochs,
                                  validation_data=(validation_data['x_data_pad'], validation_data['y_data']), verbose=1)
         np.save(history_path, history.history)
+
+    def train_old_model(self, old_model_path, train_data, validation_data,  new_history_path):
+        old_model = tf.keras.models.load_model(old_model_path)
+        history = old_model.fit(train_data['x_train_pad'], train_data['y_train'], batch_size=self.bat_size, epochs=self.num_epochs,
+                                 validation_data=(validation_data['x_data_pad'], validation_data['y_data']), verbose=1)
+        np.save(new_history_path, history.history)
 
     def save_model(self, name):
         file_path = '/home/myuser/testTweet/LID/saved_model/' + name
