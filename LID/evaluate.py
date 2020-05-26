@@ -15,11 +15,11 @@ class EvaluateModel:
 
     def evaluate_model(self):
         # Evaluate the restored model
-        loss, acc = self.model.evaluate(self.validation_data['x_data_pad'], self.validation_data['y_data'], verbose=2)
+        loss, acc = self.model.evaluate(self.validation_data['x_data_pad'], self.validation_data['y_data'], verbose=1)
         print("Loss: %.2f" % loss)
         print('Restored model, validation accuracy: {:5.2f}%'.format(100 * acc))
         # Evaluate the restored model
-        loss2, acc2 = self.model.evaluate(self.test_data['x_data_pad'], self.test_data['y_data'], verbose=2)
+        loss2, acc2 = self.model.evaluate(self.test_data['x_data_pad'], self.test_data['y_data'], verbose=1)
         print("Loss: %.2f" % loss2)
         print('Restored model, test accuracy: {:5.2f}%'.format(100 * acc2))
 
