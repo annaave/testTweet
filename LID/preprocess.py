@@ -14,17 +14,19 @@ can preprocess data for LSTM models and fastText models.
 
 
 class Preprocess:
-    def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size,
-                 oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150, num_lang=5):
+    def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size, num_lang,
+                 oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150):
         self.model_type = model_type
+        self.class_names = class_names  # The names of the classes/labels for all the data samples
+        self.num_lang = num_lang
+        self.d = dict(zip(self.class_names, range(0, self.num_lang)))
+        print(self.d)
         try:
             if self.model_type == 'LSTM' or self.model_type == 'fastText':
                 self.max_rows = 5000    # Maximum number of rows for each language dataset added to the total dataset
                 pd.options.display.max_colwidth = 1000  # Displaying longer lines when printing dataFrames
-                self.num_lang = num_lang
                 self.file_names = pd.DataFrame()
                 self.data = pd.DataFrame()
-                self.class_names = class_names  # The names of the classes/labels for all the data samples
                 self.vocab_size = vocab_size
                 self.oov_tok = oov_tok
                 self.trunc_type = trunc_type
@@ -67,7 +69,6 @@ class Preprocess:
             frame.to_csv("data_readable_files.csv", index=False)
 
     def read_all_files(self):
-        d = dict(zip(self.class_names, range(0, self.num_lang)))
         if path.exists("data_readable_files.csv"):
             labeled_files = pd.read_csv("data_readable_files.csv")
             for i in range(len(labeled_files)):
@@ -78,7 +79,7 @@ class Preprocess:
                 self.data = self.data.append(df_new)
 
             if self.model_type == 'LSTM':
-                self.data['language'] = self.data['language'].map(d, na_action='ignore')
+                self.data['language'] = self.data['language'].map(self.d, na_action='ignore')
 
             self.data = self.data.sample(frac=1).reset_index(drop=True)
             self.data.reset_index(drop=True, inplace=True)
@@ -162,6 +163,13 @@ class Preprocess:
             'x_data_pad': x_data_pad
         }
         return data_object
+
+    def tokenize_line(self, line, tokenizer):
+        text = [line]
+        print(text)
+        data_sequence = tokenizer.texts_to_sequences(text)
+        data_padded = pad_sequences(data_sequence, maxlen=self.max_length, padding=self.padding_type, truncating=self.trunc_type)
+        return data_padded
 
 
 def remove_emojies(text):

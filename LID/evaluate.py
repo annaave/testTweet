@@ -27,6 +27,10 @@ class EvaluateModel:
         y_pred = self.model.predict_classes(self.test_data['x_data_pad'])
         return y_pred
 
+    def predict_line(self, line):
+        y_pred = self.model.predict(line)
+        return y_pred
+
     def speed_test(self):
         start = time.time()
         for i in range(4):
@@ -68,14 +72,7 @@ class EvaluateModel:
         print(len(count_10) + len(count_20) + len(count_40) + len(count_60) + len(count_80) + len(count_100) + len(
             count_120))
         objects = ('0-20', '20-40', '40-60', '60-80', '80-100', '100-120', '120-140')
-        count = []
-        count.append(count_10)
-        count.append(count_20)
-        count.append(count_40)
-        count.append(count_60)
-        count.append(count_80)
-        count.append(count_100)
-        count.append(count_120)
+        count = [count_10, count_20, count_40, count_60, count_80, count_100, count_120]
 
         predictions = [[] for _ in range(len(count))]
         new_predictions = [[] for _ in range(len(count))]
@@ -96,7 +93,6 @@ class EvaluateModel:
             accuracy.append(true_positives[i] / len(predictions[i]))
             print("Accuracy for tweet lengths", objects[i], "characters:", accuracy[i])
 
-
         # --------------------------------------------------------------
         print()
 
@@ -109,7 +105,62 @@ class EvaluateModel:
         plt.ylabel('Accuracy')
         plt.xlabel('Character length of tweet')
         plt.title('Accuracy for different character lengths of tweets')
-        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_15epochs.png')
+        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart.png')
         plt.close()
 
+    def plot_lang_bar(self, x_test, y_test, x_test_pad, labels):
 
+        count_eng = []
+        count_swe = []
+        count_spa = []
+        count_por = []
+        count_rus = []
+
+        for i in range(len(y_test)):
+            if y_test[i] == 0:
+                count_eng.append(i)
+            if y_test[i] == 1:
+                count_swe.append(i)
+            if y_test[i] == 2:
+                count_spa.append(i)
+            if y_test[i] == 3:
+                count_por.append(i)
+            if y_test[i] == 4:
+                count_rus.append(i)
+
+        count = [count_eng, count_swe, count_spa, count_por, count_rus]
+
+        objects = ('English', 'Swedish', 'Spanish', 'Portuguese', 'Russian')
+        predictions = [[] for _ in range(len(y_test))]
+        new_predictions = [[] for _ in range(len(y_test))]
+        true_positives = []
+        accuracy = []
+
+        for i in range(0, len(count)):
+            print(count[i])
+            print([labels[label] for label in y_test[count[i]]])
+            predictions[i] = self.model.predict(x_test_pad[count[i]])
+            true_positives.append(0)
+            for j in range(len(count[i])):
+                a = np.argmax(predictions[i][j])
+                new_predictions[i].append(a)
+                if new_predictions[i][j] == y_test[count[i][j]]:
+                    true_positives[i] = true_positives[i] + 1
+            print([labels[label] for label in new_predictions[i]])
+            print("Number of tweets of language", objects[i], ":",  len(predictions[i]))
+            accuracy.append(true_positives[i] / len(predictions[i]))
+            print("Accuracy for", objects[i], ":", accuracy[i])
+
+            # --------------------------------------------------------------
+        print()
+
+        y_pos = np.arange(len(objects))
+        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4]]
+
+        plt.bar(y_pos, performance, align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('Accuracy')
+        plt.xlabel('Language of tweet')
+        plt.title('Accuracy for different languages of tweets')
+        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages.png')
+        plt.close()

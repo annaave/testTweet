@@ -71,3 +71,31 @@ def save_confusion(y_test, y_prediction, labels):
     plt.xticks(rotation=0)
     plt.savefig('/home/myuser/testTweet/LID/figures/confusion_matrix_May_18.png')
     plt.close()
+
+
+def char_count(data):
+    max_len = 0
+    min_len = len(data['tweets'][0])
+    count_char = 0
+    lengths = []
+    for row in data['tweets']:
+        if len(row) > max_len:
+            max_len = len(row)
+        if min_len > len(row):
+            min_len = len(row)
+        for element in row:
+            count_char += 1
+        lengths.append(len(row))
+    data['tweet length'] = lengths
+    return count_char, max_len, min_len
+
+
+def create_histogram(all_data):
+    s = all_data['tweet length']
+    ax = s.hist(bins=10, grid=True)
+    ax.set_xlabel('Number of characters')
+    ax.set_ylabel('Number of tweets')
+    ax.set_title('Distribution of tweet lengths')
+    fig = ax.get_figure()
+    fig.savefig('histogram.png')
+    plt.close()
