@@ -115,6 +115,9 @@ class EvaluateModel:
         count_spa = []
         count_por = []
         count_rus = []
+        count_ger = []
+        count_pol = []
+        count_ser = []
 
         for i in range(len(y_test)):
             if y_test[i] == 0:
@@ -127,10 +130,16 @@ class EvaluateModel:
                 count_por.append(i)
             if y_test[i] == 4:
                 count_rus.append(i)
+            if y_test[i] == 5:
+                count_ger.append(i)
+            if y_test[i] == 6:
+                count_pol.append(i)
+            if y_test[i] == 7:
+                count_ser.append(i)
 
-        count = [count_eng, count_swe, count_spa, count_por, count_rus]
+        count = [count_eng, count_swe, count_spa, count_por, count_rus, count_ger, count_pol, count_ser]
 
-        objects = ('English', 'Swedish', 'Spanish', 'Portuguese', 'Russian')
+        objects = ('Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser')
         predictions = [[] for _ in range(len(y_test))]
         new_predictions = [[] for _ in range(len(y_test))]
         true_positives = []
@@ -155,7 +164,7 @@ class EvaluateModel:
         print()
 
         y_pos = np.arange(len(objects))
-        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4]]
+        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7]]
 
         plt.bar(y_pos, performance, align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
