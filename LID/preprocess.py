@@ -94,14 +94,15 @@ class Preprocess:
         # Clean text of url:s and emojies
         for i in range(len(self.data)):
             row = self.data.loc[i, 'tweets']
+            #line = re.sub(r'http\S+', '', row)
+            text = re.sub(r'http\S+', '', row)
+            #text = remove_emojies(line)
+            self.data.loc[i, 'tweets'] = text
             # line = re.sub(r'http\S+', '', self.data['tweets'][i])
-            line = re.sub(r'http\S+', '', row)
+            # self.data['tweets'][i] = text
             # self.data['tweets'][i] = line
             #self.data.loc[i, 'tweets'] = line
             # text = remove_emojies(self.data['tweets'][i])
-            text = remove_emojies(line)
-            # self.data['tweets'][i] = text
-            self.data.loc[i, 'tweets'] = text
 
     def split_clean_save_data(self, clean_data):
         if self.model_type == 'LSTM':

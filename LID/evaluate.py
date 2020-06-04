@@ -3,6 +3,7 @@ import keras
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import pandas as pd
 
 
 class EvaluateModel:
@@ -24,7 +25,10 @@ class EvaluateModel:
         print('Restored model, test accuracy: {:5.2f}%'.format(100 * acc2))
 
     def predict_data(self):
+        print(self.test_data['x_data'][:10])
+        print(self.test_data['y_data'][:10])
         y_pred = self.model.predict_classes(self.test_data['x_data_pad'])
+        print(y_pred[:10])
         return y_pred
 
     def predict_line(self, line):
@@ -143,25 +147,50 @@ class EvaluateModel:
         predictions = [[] for _ in range(len(y_test))]
         new_predictions = [[] for _ in range(len(y_test))]
         true_positives = []
+        mis_classifications = []
         accuracy = []
+        value_prediction = []
+        prediction_length = []
+        tweet_dist = []
 
         for i in range(0, len(count)):
-            print(count[i])
-            print([labels[label] for label in y_test[count[i]]])
+            #print(count[i])
+            #print([labels[label] for label in y_test[count[i]]])
             predictions[i] = self.model.predict(x_test_pad[count[i]])
             true_positives.append(0)
+            mis_classifications.append(0)
+
             for j in range(len(count[i])):
                 a = np.argmax(predictions[i][j])
                 new_predictions[i].append(a)
+
                 if new_predictions[i][j] == y_test[count[i][j]]:
                     true_positives[i] = true_positives[i] + 1
-            print([labels[label] for label in new_predictions[i]])
+
+                    value = max(predictions[i][j])
+                    value_prediction.append(value)
+                    prediction_length.append(len(x_test[count[i][j]]))
+                    tweet_dist.append(x_test[count[i][j]])
+
+                else:
+                    mis_classifications[i] = mis_classifications[i] +1
+                    print("tweet:", x_test[count[i][j]], ": Real label:", y_test[count[i][j]], ": Predicted label:"
+                          , new_predictions[i][j], predictions[i][j])
+            #print([labels[label] for label in new_predictions[i]])
             print("Number of tweets of language", objects[i], ":",  len(predictions[i]))
             accuracy.append(true_positives[i] / len(predictions[i]))
             print("Accuracy for", objects[i], ":", accuracy[i])
+            print("Number of misclassifications:", mis_classifications[i])
+            print("Number of correct classifications:", true_positives[i])
 
+            print()
+        data_dist = {"Probability of prediction": value_prediction, "Tweet": tweet_dist, "Length of tweet": prediction_length}
+        distribution_probabilities = pd.DataFrame(data_dist)
+        distribution_probabilities = distribution_probabilities.sort_values(by="Length of tweet")
+        print(distribution_probabilities)
             # --------------------------------------------------------------
         print()
+
 
         y_pos = np.arange(len(objects))
         performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7]]
@@ -173,3 +202,6 @@ class EvaluateModel:
         plt.title('Accuracy for different languages of tweets')
         plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages.png')
         plt.close()
+
+        distribution_probabilities.plot(x="Length of tweet", y="Probability of prediction", logx=True, style='o')
+        plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob.png")

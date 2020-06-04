@@ -18,7 +18,7 @@ class TrainModel:
                 self.model = Sequential()
                 self.model.add(Embedding(vocab_size, embedding_dim))
                 self.model.add(Bidirectional(LSTM(embedding_dim)))
-                #self.model.add(Dropout(0.2))
+                self.model.add(Dropout(0.2))
                 self.model.add(Dense(embedding_dim, activation='relu'))
                 self.model.add(Dense(len(class_names), activation='softmax'))
                 self.model.summary()
