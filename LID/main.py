@@ -59,7 +59,7 @@ print(norweigan_line, ', prediction:', lstm_evaluation.predict_line(norw_line))
 print(swedish_line, ', prediction:', lstm_evaluation.predict_line(swe_line))
 
 print("Time to predict 8000 tweets for LSTM: ", lstm_evaluation.speed_test(), "seconds")
-
+#
 # Bar chart of accuracy over tweet sample lengths
 lstm_evaluation.plot_bar_chart(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
                                y_test=test_data['y_data'], labels=class_names)
