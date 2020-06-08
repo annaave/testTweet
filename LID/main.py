@@ -5,6 +5,8 @@ from LID.evaluate import EvaluateModel
 from LID.visualize import load_history, plot_graphs, char_count, create_histogram, create_confusion
 from sklearn.metrics import confusion_matrix, classification_report
 import timeit
+import pickle
+
 
 
 class_names = ['English', 'Swedish', 'Spanish', 'Portuguese', 'Russian', 'German', 'Polish', 'Serbian']
@@ -26,7 +28,16 @@ lstm_preprocess.read_all_files()
 # print(lstm_preprocess.data)
 # lstm_preprocess.split_clean_save_data(clean_data=True)
 # print(lstm_preprocess.data)
-tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
+# tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
+#
+# # saving tokenizer when training a new model
+# with open('tokenizer.pickle', 'wb') as handle:
+#     pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# loading tokenizer when using an old model
+with open('tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
+
 validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data.csv', tokenizer)
 
 # # ------ PRE-TRAINED MODEL PATH ------
@@ -59,7 +70,7 @@ print(norweigan_line, ', prediction:', lstm_evaluation.predict_line(norw_line))
 print(swedish_line, ', prediction:', lstm_evaluation.predict_line(swe_line))
 
 print("Time to predict 8000 tweets for LSTM: ", lstm_evaluation.speed_test(), "seconds")
-#
+
 # Bar chart of accuracy over tweet sample lengths
 lstm_evaluation.plot_bar_chart(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
                                y_test=test_data['y_data'], labels=class_names)
