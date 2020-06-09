@@ -25,15 +25,15 @@ label_data_path = '/home/myuser/testTweet/LID/data/4000/'
 lstm_preprocess = Preprocess(files, model_type=model_type, class_names=class_names, raw_data_path=path_raw_data,
                              label_data_path=label_data_path, vocab_size=voc_size, num_lang=number_lang)
 #lstm_preprocess.add_labels()
-lstm_preprocess.read_all_files()
-print(lstm_preprocess.data)
-lstm_preprocess.split_clean_save_data(clean_data=True)
-print(lstm_preprocess.data)
-tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
-
-# saving tokenizer when training a new model
-with open('tokenizer.pickle', 'wb') as handle:
-    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+# lstm_preprocess.read_all_files()
+# print(lstm_preprocess.data)
+# lstm_preprocess.split_clean_save_data(clean_data=True)
+# print(lstm_preprocess.data)
+# tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
+#
+# # saving tokenizer when training a new model
+# with open('tokenizer.pickle', 'wb') as handle:
+#     pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # loading tokenizer when using an old model
 with open('tokenizer.pickle', 'rb') as handle:
@@ -51,9 +51,9 @@ validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validatio
 
 # ------ LSTM MODEL ------
 history_path = '/home/myuser/testTweet/LID/saved_model/history_lstm_4000.npy'
-lstm_model = TrainModel('LSTM', embedding_dim, class_names, bat_size, num_epochs, vocab_size=voc_size)
-lstm_model.train_model(training_data, validation_data, history_path)
-lstm_model.save_model("lstm_model_4000")
+# lstm_model = TrainModel('LSTM', embedding_dim, class_names, bat_size, num_epochs, vocab_size=voc_size)
+# lstm_model.train_model(training_data, validation_data, history_path)
+# lstm_model.save_model("lstm_model_4000")
 
 # ----- EVALUATE MODEL ------
 model_path = '/home/myuser/testTweet/LID/saved_model/lstm_model_4000'
@@ -78,20 +78,18 @@ lstm_evaluation.evaluate_model()
 #
 # lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
 #                               y_test=test_data['y_data'], labels=class_names)
-# lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-#                                   y_test=test_data['y_data'], labels=class_names)
+lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+                                  y_test=test_data['y_data'], labels=class_names)
 
 # ------ VISUALIZE LSTM MODEL ------
 # Plot graph of accuracy and loss of model over number of epochs
-history = load_history(history_path)
-plot_graphs(history)
-
-char_count, max_len, min_len = char_count(lstm_preprocess.data)
-create_histogram(lstm_preprocess.data)
-y_prediction = lstm_evaluation.predict_data()
-create_confusion(test_data['y_data'], y_prediction)
-
-
+# history = load_history(history_path)
+# plot_graphs(history)
+#
+# char_count, max_len, min_len = char_count(lstm_preprocess.data)
+# create_histogram(lstm_preprocess.data)
+# y_prediction = lstm_evaluation.predict_data()
+# create_confusion(test_data['y_data'], y_prediction)
 
 
 # ------ fastText model ------

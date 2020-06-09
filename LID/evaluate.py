@@ -270,6 +270,20 @@ class EvaluateModel:
         probabilities_correct = probabilities_correct.sort_values(by="proba")
         probabilities_correct = probabilities_correct.reset_index(drop=True)
 
+
+
+        for i in range(len(value_prediction)):
+            if value_prediction[i] >= [0.9]:
+                #print("Proba's over 90%:", value_prediction[i], x_test[count_lang[i]])
+                print()
+
+            else:
+                print()
+                print("Proba's under 90%:", value_prediction[i], x_test[count_lang[i]])
+
+
+
+
         plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Maximum of prediction')
