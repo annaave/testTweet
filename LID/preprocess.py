@@ -86,6 +86,8 @@ class Preprocess:
 
             self.data = self.data.sample(frac=1).reset_index(drop=True)
             self.data.reset_index(drop=True, inplace=True)
+            self.data.drop_duplicates(subset="tweets", keep='first', inplace=True)
+            self.data.reset_index(drop=True, inplace=True)
 
         else:
             print("Create files with labels first, with class method add_labels()!")

@@ -224,3 +224,55 @@ class EvaluateModel:
         plt.title('Correctly classified languages.')
         plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob.png")
         plt.close()
+
+    def plot_language_dis(self, x_test, y_test, x_test_pad, labels):
+        count_lang = []
+
+        for i in range(len(y_test)):
+            if y_test[i] == 0:
+                count_lang.append(i)
+
+        predictions = [[] for _ in range(len(count_lang))]
+        new_predictions = [[] for _ in range(len(count_lang))]
+        true_positives = []
+        mis_classifications = []
+        value_prediction = []
+        prediction_length = []
+        tweet_dist = []
+
+        predictions = self.model.predict(x_test_pad[count_lang]) #vector of probabilities of 8 languages
+
+        for i in range(len(count_lang)):
+            true_positives.append(0)
+            mis_classifications.append(0)
+
+            a = np.argmax(predictions[i])
+            new_predictions[i].append(a)
+
+            value = predictions[i][new_predictions[i]]
+            value_prediction.append(value)
+            prediction_length.append(len(x_test[count_lang[i]]))
+
+            if new_predictions[i] == y_test[count_lang[i]]:
+                true_positives[i] = true_positives[i] + 1
+
+                # value = predictions[i][new_predictions[i]]
+                # value_prediction.append(value)
+                # prediction_length.append(len(x_test[count_lang[i]]))
+
+            else:
+                mis_classifications[i] = mis_classifications[i] + 1
+        #print("Tweet:", x_test[count_lang[0]], "prediction:", predictions[0], "max value:", new_predictions[0], value_prediction[0])
+        print(len(value_prediction))
+
+        data = {"proba": value_prediction}
+        probabilities_correct = pd.DataFrame(data)
+        probabilities_correct = probabilities_correct.sort_values(by="proba")
+        probabilities_correct = probabilities_correct.reset_index(drop=True)
+
+        plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
+        plt.xlabel('Index of sample (ordered)')
+        plt.ylabel('Maximum of prediction')
+        plt.title('English tweets.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Eng.png")
+        plt.close()
