@@ -270,18 +270,14 @@ class EvaluateModel:
         probabilities_correct = probabilities_correct.sort_values(by="proba")
         probabilities_correct = probabilities_correct.reset_index(drop=True)
 
-
-
-        for i in range(len(value_prediction)):
-            if value_prediction[i] >= [0.9]:
-                #print("Proba's over 90%:", value_prediction[i], x_test[count_lang[i]])
-                print()
-
-            else:
-                print()
-                print("Proba's under 90%:", value_prediction[i], x_test[count_lang[i]])
-
-
+        # for i in range(len(value_prediction)):
+        #     if value_prediction[i] >= [0.9]:
+        #         #print("Proba's over 90%:", value_prediction[i], x_test[count_lang[i]])
+        #         print()
+        #
+        #     else:
+        #         print()
+        #         print("Proba's under 90%:", value_prediction[i], x_test[count_lang[i]])
 
 
         plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
@@ -289,4 +285,22 @@ class EvaluateModel:
         plt.ylabel('Maximum of prediction')
         plt.title('English tweets.')
         plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Eng.png")
+        plt.close()
+
+        #------ S-shaped plot --------
+        predictions_all = self.model.predict(x_test_pad)
+        all_pred_lang = []
+        for row in predictions_all:
+            all_pred_lang.append(row[1])
+
+        print(len(all_pred_lang))
+        all_pred_lang.sort()
+        all_pred = {"pred": all_pred_lang}
+        tot = pd.DataFrame(all_pred)
+        print(tot)
+        plt.plot(tot.index, tot["pred"], 'o')
+        plt.xlabel('Index of sample (ordered)')
+        plt.ylabel('Value of prediction')
+        plt.title('All outputs for the Swedish probability of all test data samples..')
+        plt.savefig("/home/myuser/testTweet/LID/figures/vector_index/all_prob_Swe_index.png")
         plt.close()

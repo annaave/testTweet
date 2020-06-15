@@ -41,6 +41,10 @@ with open('tokenizer.pickle', 'rb') as handle:
 
 validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data.csv', tokenizer)
 
+word_index = tokenizer.word_index
+print('Created dictionary from tokenizer of training data, here are the top 10 types:')
+print(dict(list(word_index.items())[0:300]))
+
 # # ------ PRE-TRAINED MODEL PATH ------
 # pre_train_path = '/home/myuser/testTweet/pre_training/saved_model/lstm_model_pre'
 #
@@ -82,6 +86,11 @@ lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_da
                                   y_test=test_data['y_data'], labels=class_names)
 
 # ------ VISUALIZE LSTM MODEL ------
+
+print(test_data['x_data'][54])
+print(test_data['x_data_pad'][54], test_data['y_data'][54])
+print(test_data['x_data'][3], test_data['x_data_pad'][3], test_data['y_data'][3])
+print(test_data['x_data'][49], test_data['x_data_pad'][49], test_data['y_data'][49])
 # Plot graph of accuracy and loss of model over number of epochs
 # history = load_history(history_path)
 # plot_graphs(history)
@@ -97,7 +106,7 @@ lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_da
 # fast_text_model = fast_text.train_fast_text_model()
 # y_actual, y_pred = fast_text.get_test_pred(fast_text_model)
 # print("Time to predict 4000 tweets for fastText: ", fast_text.speed_test(fast_text_model), "seconds")
-# #
+#
 # print(confusion_matrix(y_actual, y_pred))
 # print(classification_report(y_actual, y_pred))
 
