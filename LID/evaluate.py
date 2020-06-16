@@ -229,7 +229,7 @@ class EvaluateModel:
         count_lang = []
 
         for i in range(len(y_test)):
-            if y_test[i] == 0:
+            if y_test[i] == 4:
                 count_lang.append(i)
 
         predictions = [[] for _ in range(len(count_lang))]
@@ -279,7 +279,6 @@ class EvaluateModel:
         #         print()
         #         print("Proba's under 90%:", value_prediction[i], x_test[count_lang[i]])
 
-
         plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Maximum of prediction')
@@ -291,16 +290,25 @@ class EvaluateModel:
         predictions_all = self.model.predict(x_test_pad)
         all_pred_lang = []
         for row in predictions_all:
-            all_pred_lang.append(row[1])
-
-        print(len(all_pred_lang))
+            all_pred_lang.append(row[4])
         all_pred_lang.sort()
         all_pred = {"pred": all_pred_lang}
         tot = pd.DataFrame(all_pred)
+        correct_index = []
+        correct_values = []
+        for i in range(len(tot)):
+            for j in range(len(probabilities_correct)):
+                if tot["pred"][i] == probabilities_correct["proba"][j]:
+                    correct_index.append(i)
+                    correct_values.append(probabilities_correct["proba"][j])
+        correct_data = {"index": correct_index, "proba": correct_values}
+        correct = pd.DataFrame(correct_data)
+        print(correct)
         print(tot)
-        plt.plot(tot.index, tot["pred"], 'o')
+        plt.plot(tot.index, tot["pred"], 'ok')
+        #plt.plot(correct["index"], correct["proba"], 'om')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Value of prediction')
-        plt.title('All outputs for the Swedish probability of all test data samples..')
-        plt.savefig("/home/myuser/testTweet/LID/figures/vector_index/all_prob_Swe_index.png")
+        plt.title('All outputs for the Russian probability of all test data samples.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/vector_index/all_prob_Rus_index.png")
         plt.close()

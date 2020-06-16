@@ -85,12 +85,16 @@ lstm_evaluation.evaluate_model()
 lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
                                   y_test=test_data['y_data'], labels=class_names)
 
+y_pred = lstm_evaluation.predict_data()
+y_actual = test_data["y_data"]
+print(confusion_matrix(y_actual, y_pred))
+print(classification_report(y_actual, y_pred))
 # ------ VISUALIZE LSTM MODEL ------
 
-print(test_data['x_data'][54])
-print(test_data['x_data_pad'][54], test_data['y_data'][54])
-print(test_data['x_data'][3], test_data['x_data_pad'][3], test_data['y_data'][3])
-print(test_data['x_data'][49], test_data['x_data_pad'][49], test_data['y_data'][49])
+# print(test_data['x_data'][54])
+# print(test_data['x_data_pad'][54], test_data['y_data'][54])
+# print(test_data['x_data'][3], test_data['x_data_pad'][3], test_data['y_data'][3])
+# print(test_data['x_data'][49], test_data['x_data_pad'][49], test_data['y_data'][49])
 # Plot graph of accuracy and loss of model over number of epochs
 # history = load_history(history_path)
 # plot_graphs(history)
