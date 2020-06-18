@@ -36,14 +36,14 @@ lstm_preprocess = Preprocess(files, model_type=model_type, class_names=class_nam
 #     pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # loading tokenizer when using an old model
-with open('tokenizer.pickle', 'rb') as handle:
-    tokenizer = pickle.load(handle)
-
-validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data.csv', tokenizer)
-
-word_index = tokenizer.word_index
-print('Created dictionary from tokenizer of training data, here are the top 10 types:')
-print(dict(list(word_index.items())[0:300]))
+# with open('tokenizer.pickle', 'rb') as handle:
+#     tokenizer = pickle.load(handle)
+#
+# validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data.csv', tokenizer)
+#
+# word_index = tokenizer.word_index
+# print('Created dictionary from tokenizer of training data, here are the top 10 types:')
+# print(dict(list(word_index.items())[0:300]))
 
 # # ------ PRE-TRAINED MODEL PATH ------
 # pre_train_path = '/home/myuser/testTweet/pre_training/saved_model/lstm_model_pre'
@@ -54,17 +54,17 @@ print(dict(list(word_index.items())[0:300]))
 # lstm_evaluation.evaluate_model()
 
 # ------ LSTM MODEL ------
-history_path = '/home/myuser/testTweet/LID/saved_model/history_lstm_4000.npy'
+# history_path = '/home/myuser/testTweet/LID/saved_model/history_lstm_4000.npy'
 # lstm_model = TrainModel('LSTM', embedding_dim, class_names, bat_size, num_epochs, vocab_size=voc_size)
 # lstm_model.train_model(training_data, validation_data, history_path)
 # lstm_model.save_model("lstm_model_4000")
 
 # ----- EVALUATE MODEL ------
-model_path = '/home/myuser/testTweet/LID/saved_model/lstm_model_4000'
-
-test_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/test_data.csv', tokenizer)
-lstm_evaluation = EvaluateModel(model_path, validation_data, test_data,)
-lstm_evaluation.evaluate_model()
+# model_path = '/home/myuser/testTweet/LID/saved_model/lstm_model_4000'
+#
+# test_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/test_data.csv', tokenizer)
+# lstm_evaluation = EvaluateModel(model_path, validation_data, test_data,)
+# lstm_evaluation.evaluate_model()
 
 # norweigan_line_2 = "Jeg synes det er gøy med is"
 # swedish_line = "В Москве до смерти избили битами водителя. Дорожный конфликт.  Ад какой-то. Дикая страна"
@@ -82,13 +82,15 @@ lstm_evaluation.evaluate_model()
 #
 # lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
 #                               y_test=test_data['y_data'], labels=class_names)
-lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-                                  y_test=test_data['y_data'], labels=class_names)
 
-y_pred = lstm_evaluation.predict_data()
-y_actual = test_data["y_data"]
-print(confusion_matrix(y_actual, y_pred))
-print(classification_report(y_actual, y_pred))
+
+# lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+#                                   y_test=test_data['y_data'], labels=class_names)
+#
+# y_pred = lstm_evaluation.predict_data()
+# y_actual = test_data["y_data"]
+# print(confusion_matrix(y_actual, y_pred))
+# print(classification_report(y_actual, y_pred))
 # ------ VISUALIZE LSTM MODEL ------
 
 # print(test_data['x_data'][54])
