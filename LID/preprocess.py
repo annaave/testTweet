@@ -118,9 +118,9 @@ class Preprocess:
             train = pd.DataFrame(train)
             validation = pd.DataFrame(validation)
             test = pd.DataFrame(test)
-            train.to_csv('training_data.csv', index=False)
-            validation.to_csv('validation_data.csv', index=False)
-            test.to_csv('test_data.csv', index=False)
+            train.to_csv('training_data_9.csv', index=False)
+            validation.to_csv('validation_data_9.csv', index=False)
+            test.to_csv('test_data_9.csv', index=False)
         if self.model_type == 'fastText':
             if clean_data:
                 self.clean_data()

@@ -122,6 +122,7 @@ class EvaluateModel:
         count_ger = []
         count_pol = []
         count_ser = []
+        count_cro = []
 
         for i in range(len(y_test)):
             if y_test[i] == 0:
@@ -140,10 +141,12 @@ class EvaluateModel:
                 count_pol.append(i)
             if y_test[i] == 7:
                 count_ser.append(i)
+            if y_test[i] == 8:
+                count_cro.append(i)
 
-        count = [count_eng, count_swe, count_spa, count_por, count_rus, count_ger, count_pol, count_ser]
+        count = [count_eng, count_swe, count_spa, count_por, count_rus, count_ger, count_pol, count_ser, count_cro]
 
-        objects = ('Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser')
+        objects = ('Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Cro')
         predictions = [[] for _ in range(len(y_test))]
         new_predictions = [[] for _ in range(len(y_test))]
         true_positives = []
@@ -194,14 +197,14 @@ class EvaluateModel:
 
 
         y_pos = np.arange(len(objects))
-        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7]]
+        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7], accuracy[8]]
 
         plt.bar(y_pos, performance, align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
         plt.ylabel('Accuracy')
         plt.xlabel('Language of tweet')
         plt.title('Accuracy for different languages of tweets')
-        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages.png')
+        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages_9.png')
         plt.close()
 
         distribution_probabilities = distribution_probabilities.reset_index(drop=True)
@@ -212,7 +215,7 @@ class EvaluateModel:
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Probability of the predicted languge')
         plt.title('Correctly classified languages.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/prob_correct.png")
+        plt.savefig("/home/myuser/testTweet/LID/figures/prob_correct_9.png")
         plt.close()
 
         # distribution_probabilities.plot(x="Length of tweet", y="Probability of prediction", logx=True, style='o')
@@ -222,14 +225,14 @@ class EvaluateModel:
         plt.xlabel('Length of tweet')
         plt.ylabel('Probability of the predicted languge')
         plt.title('Correctly classified languages.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob.png")
+        plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob_9.png")
         plt.close()
 
     def plot_language_dis(self, x_test, y_test, x_test_pad, labels):
         count_lang = []
 
         for i in range(len(y_test)):
-            if y_test[i] == 4:
+            if y_test[i] == 8:
                 count_lang.append(i)
 
         predictions = [[] for _ in range(len(count_lang))]
@@ -282,15 +285,15 @@ class EvaluateModel:
         plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Maximum of prediction')
-        plt.title('English tweets.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Eng.png")
+        plt.title('Croatian tweets.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Cro_9.png")
         plt.close()
 
         #------ S-shaped plot --------
         predictions_all = self.model.predict(x_test_pad)
         all_pred_lang = []
         for row in predictions_all:
-            all_pred_lang.append(row[4])
+            all_pred_lang.append(row[8])
         all_pred_lang.sort()
         all_pred = {"pred": all_pred_lang}
         tot = pd.DataFrame(all_pred)
@@ -309,6 +312,6 @@ class EvaluateModel:
         #plt.plot(correct["index"], correct["proba"], 'om')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Value of prediction')
-        plt.title('All outputs for the Russian probability of all test data samples.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/vector_index/all_prob_Rus_index.png")
+        plt.title('All outputs for the Croatian probability of all test data samples.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/vector_index/all_prob_Cro_index_9.png")
         plt.close()
