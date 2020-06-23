@@ -232,7 +232,7 @@ class EvaluateModel:
         count_lang = []
 
         for i in range(len(y_test)):
-            if y_test[i] == 8:
+            if y_test[i] == 7:
                 count_lang.append(i)
 
         predictions = [[] for _ in range(len(count_lang))]
@@ -285,15 +285,15 @@ class EvaluateModel:
         plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Maximum of prediction')
-        plt.title('Croatian tweets.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Cro_9.png")
+        plt.title('Serbian tweets.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Ser_9.png")
         plt.close()
 
         #------ S-shaped plot --------
         predictions_all = self.model.predict(x_test_pad)
         all_pred_lang = []
         for row in predictions_all:
-            all_pred_lang.append(row[8])
+            all_pred_lang.append(row[7])
         all_pred_lang.sort()
         all_pred = {"pred": all_pred_lang}
         tot = pd.DataFrame(all_pred)
@@ -308,10 +308,10 @@ class EvaluateModel:
         correct = pd.DataFrame(correct_data)
         print(correct)
         print(tot)
-        plt.plot(tot.index, tot["pred"], 'ok')
+        plt.plot(tot.index, tot["pred"], 'o')
         #plt.plot(correct["index"], correct["proba"], 'om')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Value of prediction')
-        plt.title('All outputs for the Croatian probability of all test data samples.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/vector_index/all_prob_Cro_index_9.png")
+        plt.title('All outputs for the Serbian probability of all test data samples.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/9_languages/all_prob_Ser_index_9.png")
         plt.close()

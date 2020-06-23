@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
 import pickle
 
-
 def load_history(file_path):
     history = np.load(file_path, allow_pickle=True).item()
     return history
@@ -66,10 +65,10 @@ def save_confusion(y_test, y_prediction, labels):
                                      colnames=['Predicted labels'])
 
     plt.title("Confusion matrix over test data")
-    sn.heatmap(confusion_matrix_2, annot=True, fmt='g', xticklabels=True, yticklabels=True, cmap='Blues')
+    sn.heatmap(confusion_matrix_2, annot=True, fmt='g', xticklabels=1, yticklabels=1, cmap='Blues')
     plt.yticks(rotation=0)
     plt.xticks(rotation=0)
-    plt.savefig('/home/myuser/testTweet/LID/figures/confusion_matrix_May_18.png')
+    plt.savefig('/home/myuser/testTweet/LID/figures/confusion_matrix.png')
     plt.close()
 
 
