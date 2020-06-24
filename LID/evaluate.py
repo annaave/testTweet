@@ -266,7 +266,7 @@ class EvaluateModel:
             else:
                 mis_classifications[i] = mis_classifications[i] + 1
         #print("Tweet:", x_test[count_lang[0]], "prediction:", predictions[0], "max value:", new_predictions[0], value_prediction[0])
-        print(len(value_prediction))
+        print("Number of test samples for this languge:", len(value_prediction))
 
         data = {"proba": value_prediction}
         probabilities_correct = pd.DataFrame(data)
@@ -306,7 +306,7 @@ class EvaluateModel:
                     correct_values.append(probabilities_correct["proba"][j])
         correct_data = {"index": correct_index, "proba": correct_values}
         correct = pd.DataFrame(correct_data)
-        print(correct)
+        print("Correctly classified samples for this langugae:", correct)
         print(tot)
         plt.plot(tot.index, tot["pred"], 'o')
         #plt.plot(correct["index"], correct["proba"], 'om')

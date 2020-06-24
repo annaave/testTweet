@@ -62,13 +62,17 @@ def save_confusion(y_test, y_prediction, labels):
     data_cn = {'y_Actual': y_test_cm, 'y_Predicted': y_prediction_cm}
     df = pd.DataFrame(data_cn, columns=['y_Actual', 'y_Predicted'])
     confusion_matrix_2 = pd.crosstab(df['y_Actual'], df['y_Predicted'], rownames=['True labels'],
-                                     colnames=['Predicted labels'])
+                                     colnames=['Predicted labels'], normalize="index")
+    # for i in range(len(confusion_matrix_2)):
+    #     confusion_matrix_2.iloc[i].round(1)
+    #     confusion_matrix_2.iloc[i] *= 100
 
+    print(confusion_matrix_2)
     plt.title("Confusion matrix over test data")
-    sn.heatmap(confusion_matrix_2, annot=True, fmt='g', xticklabels=1, yticklabels=1, cmap='Blues')
+    sn.heatmap(confusion_matrix_2, annot=True, fmt='.1%', xticklabels=1, yticklabels=1, cmap='Blues')
     plt.yticks(rotation=0)
     plt.xticks(rotation=0)
-    plt.savefig('/home/myuser/testTweet/LID/figures/confusion_matrix.png')
+    plt.savefig('/home/myuser/testTweet/LID/figures/confusion_matrix_8.png')
     plt.close()
 
 

@@ -9,14 +9,14 @@ import pickle
 import pandas as pd
 
 # class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser']
-class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Croa']
+class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser']
 # class_names = ['English', 'Swedish', 'Spanish', 'Portuguese', 'Russian', 'German', 'Polish', 'Serbian', 'Croatian']
 model_type = 'LSTM'
 voc_size = 300
 embedding_dim = 128
 num_epochs = 30
 bat_size = 128
-number_lang = 9
+number_lang = 8
 
 # ------ PREPROCESSING ------
 files = '/home/myuser/testTweet/LID/4000_data_files_LID.csv'
@@ -29,17 +29,17 @@ lstm_preprocess = Preprocess(files, model_type=model_type, class_names=class_nam
 # print(lstm_preprocess.data)
 # lstm_preprocess.split_clean_save_data(clean_data=True)
 # print(lstm_preprocess.data)
-tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data_9.csv', char_level=True)
+tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
 
-# # saving tokenizer when training a new model
-with open('tokenizer_9.pickle', 'wb') as handle:
-    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+# saving tokenizer when training a new model
+# with open('tokenizer.pickle', 'wb') as handle:
+#     pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # loading tokenizer when using an old model
-with open('tokenizer_9.pickle', 'rb') as handle:
+with open('tokenizer.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
 
-validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data_9.csv', tokenizer)
+validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data.csv', tokenizer)
 
 word_index = tokenizer.word_index
 print('Created dictionary from tokenizer of training data, here are the top 10 types:')
@@ -54,17 +54,17 @@ print(dict(list(word_index.items())[0:10]))
 # lstm_evaluation.evaluate_model()
 
 # ------ LSTM MODEL ------
-history_path = '/home/myuser/testTweet/LID/saved_model/history_lstm_4000_9.npy'
+history_path = '/home/myuser/testTweet/LID/saved_model/history_lstm_4000.npy'
 # lstm_model = TrainModel('LSTM', embedding_dim, class_names, bat_size, num_epochs, vocab_size=voc_size)
 # lstm_model.train_model(training_data, validation_data, history_path)
 # lstm_model.save_model("lstm_model_4000")
 
 # ----- EVALUATE MODEL ------
-model_path = '/home/myuser/testTweet/LID/saved_model/lstm_model_4000_9'
+model_path = '/home/myuser/testTweet/LID/saved_model/lstm_model_4000'
 
-test_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/test_data_9.csv', tokenizer)
+test_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/test_data.csv', tokenizer)
 lstm_evaluation = EvaluateModel(model_path, validation_data, test_data,)
-# lstm_evaluation.evaluate_model()
+lstm_evaluation.evaluate_model()
 
 # norweigan_line_2 = "Jeg synes det er gøy med is"
 # swedish_line = "В Москве до смерти избили битами водителя. Дорожный конфликт.  Ад какой-то. Дикая страна"
@@ -80,12 +80,12 @@ print("Time to predict 8000 tweets for LSTM: ", lstm_evaluation.speed_test(), "s
 # lstm_evaluation.plot_bar_chart(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
 #                                y_test=test_data['y_data'], labels=class_names)
 
-lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-                              y_test=test_data['y_data'], labels=class_names)
-
-
-lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-                                  y_test=test_data['y_data'], labels=class_names)
+# lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+#                               y_test=test_data['y_data'], labels=class_names)
+#
+#
+# lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+#                                   y_test=test_data['y_data'], labels=class_names)
 
 y_pred = lstm_evaluation.predict_data()
 y_actual = test_data["y_data"]
@@ -98,8 +98,8 @@ print(classification_report(y_actual, y_pred))
 # print(test_data['x_data'][3], test_data['x_data_pad'][3], test_data['y_data'][3])
 # print(test_data['x_data'][49], test_data['x_data_pad'][49], test_data['y_data'][49])
 # Plot graph of accuracy and loss of model over number of epochs
-# history = load_history(history_path)
-# plot_graphs(history)
+history = load_history(history_path)
+plot_graphs(history)
 #
 # char_count, max_len, min_len = char_count(lstm_preprocess.data)
 # create_histogram(lstm_preprocess.data)
