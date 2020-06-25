@@ -42,8 +42,8 @@ with open('tokenizer.pickle', 'rb') as handle:
 validation_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/validation_data.csv', tokenizer)
 
 word_index = tokenizer.word_index
-print('Created dictionary from tokenizer of training data, here are the top 10 types:')
-print(dict(list(word_index.items())[0:10]))
+# print('Created dictionary from tokenizer of training data, here are the top 10 types:')
+# print(dict(list(word_index.items())[0:10]))
 
 # # ------ PRE-TRAINED MODEL PATH ------
 # pre_train_path = '/home/myuser/testTweet/pre_training/saved_model/lstm_model_pre'
@@ -89,23 +89,24 @@ print("Time to predict 8000 tweets for LSTM: ", lstm_evaluation.speed_test(), "s
 
 y_pred = lstm_evaluation.predict_data()
 y_actual = test_data["y_data"]
-print(confusion_matrix(y_actual, y_pred))
-print(classification_report(y_actual, y_pred))
+# print(confusion_matrix(y_actual, y_pred))
+# print(classification_report(y_actual, y_pred))
 # ------ VISUALIZE LSTM MODEL ------
 
-# print(test_data['x_data'][54])
-# print(test_data['x_data_pad'][54], test_data['y_data'][54])
+print("Tweet:", test_data['x_data'][50])
+print("Correct label:", test_data['y_data'][50])
+print("Sigmoid-layer output vector:", y_pred[50])
 # print(test_data['x_data'][3], test_data['x_data_pad'][3], test_data['y_data'][3])
 # print(test_data['x_data'][49], test_data['x_data_pad'][49], test_data['y_data'][49])
 # Plot graph of accuracy and loss of model over number of epochs
-history = load_history(history_path)
-plot_graphs(history)
+# history = load_history(history_path)
+# plot_graphs(history)
 #
 # char_count, max_len, min_len = char_count(lstm_preprocess.data)
 # create_histogram(lstm_preprocess.data)
 # y_prediction = lstm_evaluation.predict_data()
 # create_confusion(test_data['y_data'], y_prediction)
-save_confusion(y_actual, y_pred, class_names)
+# save_confusion(y_actual, y_pred, class_names)
 
 # ------ fastText model ------
 # fast_text = FastText('training_data_fasttext.txt', 'test_data_fasttext.txt')

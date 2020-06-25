@@ -28,6 +28,7 @@ class EvaluateModel:
         print(self.test_data['x_data'][:10])
         print(self.test_data['y_data'][:10])
         y_pred = self.model.predict_classes(self.test_data['x_data_pad'])
+        # y_pred = self.model.predict(self.test_data['x_data_pad'])
         print(y_pred[:10])
         return y_pred
 
