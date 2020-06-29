@@ -38,7 +38,7 @@ class Preprocess:
                     self.file_names = pd.read_csv(files, sep=',', engine='python', usecols=['file', 'language'])
 
                 if self.model_type == 'fastText':
-                    self.fasttext_train_file = 'training_data_fasttext.txt'
+                    self.fasttext_train_file = 'training_data_fasttext_9.txt'
             else:
                 raise ValueError('Invalid model type')
         except ValueError as exp:
@@ -129,10 +129,11 @@ class Preprocess:
             test = test.reset_index(drop=True)
             train = pd.DataFrame(train)
             test = pd.DataFrame(test)
-            self.create_train_file_fasttext(train)
-            test.to_csv('test_data_fasttext.txt', index=False)
+            self.create_train_file_fasttext(train, test)
+            test.to_csv('test_data_fasttext_9.txt', index=False)
+            return train, test
 
-    def create_train_file_fasttext(self, train_data):
+    def create_train_file_fasttext(self, train_data, test_data):
         """ Creates a text file such that for each tri-gram: <__label__, trigram>
                 where label is the language. FastText takes a file as input for training.
                 Returns: File name of the created file.
@@ -143,6 +144,13 @@ class Preprocess:
             text = " ".join(train_data["tweets"].iloc[i])
             train_file.write(label + " " + text + "\n")
         train_file.close()
+
+        test_file = open('test_fastText_LABEL.txt', "w+")
+        for i in range(len(test_data)):
+            label = "__label__" + test_data["language"].iloc[i]
+            text = " ".join(test_data["tweets"].iloc[i])
+            test_file.write(label + " " + text + "\n")
+        test_file.close()
 
     def tokenize_train(self, file_path, char_level):
         train_data = pd.read_csv(file_path)

@@ -10,8 +10,9 @@ class FastText:
         self.test_data = self.test_data.replace('\n', ' ', regex=True)
 
     def train_fast_text_model(self):
-        model = fasttext.train_supervised(input=self.train_data, wordNgrams=3, lr=0.5, epoch=15, ws=1,
+        model = fasttext.train_supervised(input=self.train_data, wordNgrams=3, lr=0.5, epoch=30, ws=0,
                                           label_prefix='__label__', dim=300)
+        model.save_model('fastText_model_9.bin')
         return model
 
     def get_test_pred(self, model):
@@ -22,9 +23,18 @@ class FastText:
         y_actual, y_pred = [], []
         for i in range(len(self.test_data)):
             y_actual.append("__label__" + self.test_data["language"].iloc[i])
-            pred = model.predict([" ".join(self.test_data["tweets"].iloc[i])])[0][0]
+            pred = model.predict(" ".join(self.test_data["tweets"].iloc[i]))[0][0]
             y_pred.append(pred)
+
+        print(self.test_data[:50])
+        print(y_pred[:50])
+        result = model.test('/home/myuser/testTweet/LID/training_data_fasttext_9.txt')
+        validation = model.test('/home/myuser/testTweet/LID/test_fastText_LABEL.txt')
+
+        print(result)
+        print(validation)
         return [y_actual, y_pred]
+
 
     def speed_test(self, model):
         pred_tot = []
