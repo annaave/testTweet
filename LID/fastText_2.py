@@ -12,7 +12,7 @@ class FastText:
     def train_fast_text_model(self):
         model = fasttext.train_supervised(input=self.train_data, wordNgrams=3, lr=0.5, epoch=30, ws=0,
                                           label_prefix='__label__', dim=300)
-        model.save_model('fastText_model_9.bin')
+        model.save_model('fastText_model_8.bin')
         return model
 
     def get_test_pred(self, model):
@@ -28,7 +28,7 @@ class FastText:
 
         print(self.test_data[:50])
         print(y_pred[:50])
-        result = model.test('/home/myuser/testTweet/LID/training_data_fasttext_9.txt')
+        result = model.test('/home/myuser/testTweet/LID/training_data_fasttext.txt')
         validation = model.test('/home/myuser/testTweet/LID/test_fastText_LABEL.txt')
 
         print(result)

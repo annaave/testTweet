@@ -38,7 +38,7 @@ class Preprocess:
                     self.file_names = pd.read_csv(files, sep=',', engine='python', usecols=['file', 'language'])
 
                 if self.model_type == 'fastText':
-                    self.fasttext_train_file = 'training_data_fasttext_9.txt'
+                    self.fasttext_train_file = 'training_data_fasttext.txt'
             else:
                 raise ValueError('Invalid model type')
         except ValueError as exp:
@@ -130,7 +130,7 @@ class Preprocess:
             train = pd.DataFrame(train)
             test = pd.DataFrame(test)
             self.create_train_file_fasttext(train, test)
-            test.to_csv('test_data_fasttext_9.txt', index=False)
+            test.to_csv('test_data_fasttext.txt', index=False)
             return train, test
 
     def create_train_file_fasttext(self, train_data, test_data):

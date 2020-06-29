@@ -8,15 +8,15 @@ import re
 import pickle
 import pandas as pd
 
-class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Cro']
-# class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser']
+# class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Cro']
+class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser']
 # class_names = ['English', 'Swedish', 'Spanish', 'Portuguese', 'Russian', 'German', 'Polish', 'Serbian', 'Croatian']
 model_type = 'fastText'
 voc_size = 300
 embedding_dim = 128
 num_epochs = 30
 bat_size = 128
-number_lang = 9
+number_lang = 8
 
 # ------ PREPROCESSING ------
 files = '/home/myuser/testTweet/LID/4000_data_files_LID.csv'
@@ -113,7 +113,7 @@ print(test)
 # save_confusion(y_actual, y_pred, class_names)
 
 # ------ fastText model ------
-fast_text = FastText('training_data_fasttext_9.txt', 'test_data_fasttext_9.txt')
+fast_text = FastText('training_data_fasttext.txt', 'test_data_fasttext.txt')
 fast_text_model = fast_text.train_fast_text_model()
 y_actual, y_pred = fast_text.get_test_pred(fast_text_model)
 
