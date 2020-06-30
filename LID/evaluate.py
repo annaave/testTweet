@@ -123,7 +123,6 @@ class EvaluateModel:
         count_ger = []
         count_pol = []
         count_ser = []
-        count_cro = []
 
         for i in range(len(y_test)):
             if y_test[i] == 0:
@@ -142,12 +141,10 @@ class EvaluateModel:
                 count_pol.append(i)
             if y_test[i] == 7:
                 count_ser.append(i)
-            if y_test[i] == 8:
-                count_cro.append(i)
 
-        count = [count_eng, count_swe, count_spa, count_por, count_rus, count_ger, count_pol, count_ser, count_cro]
+        count = [count_eng, count_swe, count_spa, count_por, count_rus, count_ger, count_pol, count_ser]
 
-        objects = ('Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Cro')
+        objects = ('Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser')
         predictions = [[] for _ in range(len(y_test))]
         new_predictions = [[] for _ in range(len(y_test))]
         true_positives = []
@@ -198,14 +195,14 @@ class EvaluateModel:
 
 
         y_pos = np.arange(len(objects))
-        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7], accuracy[8]]
+        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7]]
 
         plt.bar(y_pos, performance, align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
         plt.ylabel('Accuracy')
         plt.xlabel('Language of tweet')
         plt.title('Accuracy for different languages of tweets')
-        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages_9.png')
+        plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages.png')
         plt.close()
 
         distribution_probabilities = distribution_probabilities.reset_index(drop=True)
@@ -216,7 +213,7 @@ class EvaluateModel:
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Probability of the predicted languge')
         plt.title('Correctly classified languages.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/prob_correct_9.png")
+        plt.savefig("/home/myuser/testTweet/LID/figures/prob_correct.png")
         plt.close()
 
         # distribution_probabilities.plot(x="Length of tweet", y="Probability of prediction", logx=True, style='o')
@@ -224,9 +221,9 @@ class EvaluateModel:
         print(distribution_probabilities)
         plt.plot(distribution_probabilities.index, distribution_probabilities["Probability of prediction"], 'o')
         plt.xlabel('Length of tweet')
-        plt.ylabel('Probability of the predicted languge')
+        plt.ylabel('Probability from the softmax output vector')
         plt.title('Correctly classified languages.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob_9.png")
+        plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob.png")
         plt.close()
 
     def plot_language_dis(self, x_test, y_test, x_test_pad, labels):
