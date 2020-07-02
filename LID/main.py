@@ -32,7 +32,7 @@ lstm_preprocess = Preprocess(files, model_type=model_type, class_names=class_nam
 #lstm_preprocess.create_train_file_fasttext(train, test)
 
 
-tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
+# tokenizer, training_data = lstm_preprocess.tokenize_train('/home/myuser/testTweet/LID/training_data.csv', char_level=True)
 
 # saving tokenizer when training a new model
 # with open('tokenizer.pickle', 'wb') as handle:
@@ -71,8 +71,8 @@ lstm_evaluation.evaluate_model()
 
 # norweigan_line_2 = "Jeg synes det er gøy med is"
 # swedish_line = "В Москве до смерти избили битами водителя. Дорожный конфликт.  Ад какой-то. Дикая страна"
-# norweigan_line = 'vi er like'
-# norw_line = lstm_preprocess.tokenize_line(norweigan_line, tokenizer)
+# norweigan_line = 'oj vad kul det ska bli, vi är bäst!'
+# norw_line = lstm_preprocess.tokenize_line(norweigan_line_2, tokenizer)
 # swe_line = lstm_preprocess.tokenize_line(swedish_line, tokenizer)
 # print(norweigan_line, ', prediction:', lstm_evaluation.predict_line(norw_line))
 # print(swedish_line, ', prediction:', lstm_evaluation.predict_line(swe_line))
@@ -83,8 +83,8 @@ lstm_evaluation.evaluate_model()
 # lstm_evaluation.plot_bar_chart(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
 #                                y_test=test_data['y_data'], labels=class_names)
 
-lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-                              y_test=test_data['y_data'], labels=class_names)
+# lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+#                               y_test=test_data['y_data'], labels=class_names)
 #
 #
 # lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
@@ -102,8 +102,8 @@ lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['
 # print(test_data['x_data'][3], test_data['x_data_pad'][3], test_data['y_data'][3])
 # print(test_data['x_data'][49], test_data['x_data_pad'][49], test_data['y_data'][49])
 # Plot graph of accuracy and loss of model over number of epochs
-# history = load_history(history_path)
-# plot_graphs(history)
+history = load_history(history_path)
+plot_graphs(history)
 #
 # char_count, max_len, min_len = char_count(lstm_preprocess.data)
 # create_histogram(lstm_preprocess.data)
@@ -112,24 +112,24 @@ lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['
 # save_confusion(y_actual, y_pred, class_names)
 
 # ------ fastText model ------
-# fast_text = FastText('training_data_fasttext.txt', 'test_data_fasttext.txt')
-# fast_text_model = fast_text.train_fast_text_model()
-# y_actual, y_pred = fast_text.get_test_pred(fast_text_model)
-#
-#
-# for i in range(len(y_actual)):
-#     text = re.sub('__label__', '', y_actual[i])
-#     y_actual[i] = text
-#
-# for i in range(len(y_pred)):
-#     new = re.sub('__label__', '', y_pred[i])
-#     y_pred[i] = new
-#
-#
-# save_confusion(y_actual, y_pred, class_names)
-# print("Time to predict 4000 tweets for fastText: ", fast_text.speed_test(fast_text_model), "seconds")
-#
-# print(confusion_matrix(y_actual, y_pred))
-# print(classification_report(y_actual, y_pred))
+fast_text = FastText('training_data_fasttext.txt', 'test_data_fasttext.txt')
+fast_text_model = fast_text.train_fast_text_model()
+y_actual, y_pred = fast_text.get_test_pred(fast_text_model)
+
+
+for i in range(len(y_actual)):
+    text = re.sub('__label__', '', y_actual[i])
+    y_actual[i] = text
+
+for i in range(len(y_pred)):
+    new = re.sub('__label__', '', y_pred[i])
+    y_pred[i] = new
+
+
+save_confusion(y_actual, y_pred, class_names)
+print("Time to predict 4000 tweets for fastText: ", fast_text.speed_test(fast_text_model), "seconds")
+
+print(confusion_matrix(y_actual, y_pred))
+print(classification_report(y_actual, y_pred))
 
 

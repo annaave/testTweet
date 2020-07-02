@@ -218,7 +218,8 @@ class EvaluateModel:
 
         # distribution_probabilities.plot(x="Length of tweet", y="Probability of prediction", logx=True, style='o')
         distribution_probabilities = distribution_probabilities.groupby('Length of tweet').mean()
-        print(distribution_probabilities)
+        print(distribution_probabilities.index)
+        # plt.plot(distribution_probabilities['Length of tweet'], distribution_probabilities["Probability of prediction"], 'o')
         plt.plot(distribution_probabilities.index, distribution_probabilities["Probability of prediction"], 'o')
         plt.xlabel('Length of tweet')
         plt.ylabel('Probability from the softmax output vector')
