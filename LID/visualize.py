@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
-import pickle
+
 
 def load_history(file_path):
     history = np.load(file_path, allow_pickle=True).item()

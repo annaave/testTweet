@@ -6,14 +6,11 @@ from os import path
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-"""
-Preprocessing class which reads collected text data, adds labels to it and 
-convert it to the desired format for further modelling. As for now, the class 
-can preprocess data for LSTM models and fastText models.
-"""
-
 
 class Preprocess:
+    """Preprocessing class which reads collected text data, adds labels to it and convert it to the desired format for
+    further modelling. As for now, the class can preprocess data for LSTM models and fastText models."""
+
     def __init__(self, files, model_type, class_names, raw_data_path, label_data_path, vocab_size, num_lang,
                  oov_tok='<OOV>', trunc_type='post', padding_type='post', max_length=150):
         self.model_type = model_type
@@ -44,8 +41,7 @@ class Preprocess:
         except ValueError as exp:
             print('Only LSTM or fastText are valid model_types!')
 
-    # Function to add labels to every data sample and create a
-    # file with a list of the names of the new labeled files.
+    # Method to add labels to every data sample and create a file with a list of the names of the new labeled files.
     def add_labels(self):
         if path.exists("data_readable_files.csv"):
             print('Files with labels already exists!')
@@ -69,6 +65,7 @@ class Preprocess:
             # Save a file with a list of all the dataset files with labeled data samples
             frame.to_csv("data_readable_files.csv", index=False)
 
+    # Open and read a files with data, if files with labels exist.
     def read_all_files(self):
         if path.exists("data_readable_files.csv"):
             labeled_files = pd.read_csv("data_readable_files.csv")
@@ -92,20 +89,17 @@ class Preprocess:
         else:
             print("Create files with labels first, with class method add_labels()!")
 
+    # Clean text of url:s and emojis if wanted.
     def clean_data(self):
-        # Clean text of url:s and emojies
         for i in range(len(self.data)):
             row = self.data.loc[i, 'tweets']
-            #line = re.sub(r'http\S+', '', row)
             text = re.sub(r'http\S+', '', row)
-            #text = remove_emojies(line)
+            # text = remove_emojies(row)
             self.data.loc[i, 'tweets'] = text
-            # line = re.sub(r'http\S+', '', self.data['tweets'][i])
-            # self.data['tweets'][i] = text
-            # self.data['tweets'][i] = line
-            #self.data.loc[i, 'tweets'] = line
-            # text = remove_emojies(self.data['tweets'][i])
 
+    # Depending on if the model is a LSTM or fastText, the method plot the dataset into wither three or two new ones,
+    # randomly divided. The new datasets are saved to CSV-files and if clean_data=True the text is cleaned from url:s
+    # and more depending on what is wanted.
     def split_clean_save_data(self, clean_data):
         if self.model_type == 'LSTM':
             if clean_data:
@@ -133,11 +127,10 @@ class Preprocess:
             test.to_csv('test_data_fasttext.txt', index=False)
             return train, test
 
+    # Creates a text file such that for each tri-gram: <__label__, trigram> where label is the language.
+    # FastText takes a file as input for training.
+    # Returns: File name of the created file.
     def create_train_file_fasttext(self, train_data, test_data):
-        """ Creates a text file such that for each tri-gram: <__label__, trigram>
-                where label is the language. FastText takes a file as input for training.
-                Returns: File name of the created file.
-            """
         train_file = open(self.fasttext_train_file, "w+")
         for i in range(len(train_data)):
             label = "__label__" + train_data["language"].iloc[i]
@@ -152,6 +145,8 @@ class Preprocess:
             test_file.write(label + " " + text + "\n")
         test_file.close()
 
+    # Creates a tokenizer on the training dataset that is used on all the other dataset. The char_level=True yields a
+    # tokenization of characters, otherwise by words.
     def tokenize_train(self, file_path, char_level):
         train_data = pd.read_csv(file_path)
         x_train = np.asarray([np.asarray(text) for text in train_data['tweets']])
@@ -171,6 +166,7 @@ class Preprocess:
         }
         return tokenizer, train_object
 
+    # Using a saved tokenizer to tokenize new datasets.
     def tokenize(self, file_path, tokenizer):
         current_data = pd.read_csv(file_path)
         x_data = np.asarray([np.asarray(text) for text in current_data['tweets']])
@@ -185,6 +181,7 @@ class Preprocess:
         }
         return data_object
 
+    # Using a saved tokenizer on a single line of text.
     def tokenize_line(self, line, tokenizer):
         text = [line]
         print(text)
@@ -194,6 +191,7 @@ class Preprocess:
         return data_padded
 
 
+# Removes emojies by its corresponding Unicode.
 def remove_emojies(text):
     # Ref: https://gist.github.com/Alex-Just/e86110836f3f93fe7932290526529cd1#gistcomment-3208085
     # Ref: https://en.wikipedia.org/wiki/Unicode_block

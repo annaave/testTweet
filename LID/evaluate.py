@@ -1,5 +1,4 @@
 import tensorflow as tf
-import keras
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -7,11 +6,15 @@ import pandas as pd
 
 
 class EvaluateModel:
+    """A class that evaluates an already trained and loaded machine learning model. The class has several methods
+    to saved plots of the evaluation and gives numbers such as accuracy and loss for the restored model, saved history
+    of training and predicting new datasets and evaluating them too."""
+
     def __init__(self, model, validation_data, test_data):
         self.model = tf.keras.models.load_model(model)
         self.validation_data = validation_data
         self.test_data = test_data
-        # Check its architecture
+        # Check the model architecture
         self.model.summary()
 
     def evaluate_model(self):
@@ -24,14 +27,15 @@ class EvaluateModel:
         print("Loss: %.2f" % loss2)
         print('Restored model, test accuracy: {:5.2f}%'.format(100 * acc2))
 
+    # Predict a new dataset and print out the predictions of the 10 first
     def predict_data(self):
         print(self.test_data['x_data'][:10])
         print(self.test_data['y_data'][:10])
         y_pred = self.model.predict_classes(self.test_data['x_data_pad'])
-        # y_pred = self.model.predict(self.test_data['x_data_pad'])
         print(y_pred[:10])
         return y_pred
 
+    # Predict one new line of text
     def predict_line(self, line):
         y_pred = self.model.predict(line)
         return y_pred
@@ -40,10 +44,13 @@ class EvaluateModel:
         start = time.time()
         for i in range(4):
             self.model.predict_classes(self.test_data['x_data_pad'], batch_size=len(self.test_data['x_data_pad']))
-        time_taken = (time.time()-start)
+        time_taken = (time.time() - start)
         return time_taken
 
+    # Saves a bar chart figure showing the accuracy of predicted text towards the length of the text.
     def plot_bar_chart(self, x_test, y_test, x_test_pad, labels):
+
+        # Extracting the character lengths of the input data texts.
         length_test = []
         for i in range(len(x_test)):
             length_test.append(len(x_test[i]))
@@ -76,6 +83,8 @@ class EvaluateModel:
 
         print(len(count_10) + len(count_20) + len(count_40) + len(count_60) + len(count_80) + len(count_100) + len(
             count_120))
+
+        # Dividing the data in 7 bins with different character length of the input data.
         objects = ('0-20', '20-40', '40-60', '60-80', '80-100', '100-120', '120-140')
         count = [count_10, count_20, count_40, count_60, count_80, count_100, count_120]
 
@@ -83,6 +92,8 @@ class EvaluateModel:
         new_predictions = [[] for _ in range(len(count))]
         true_positives = []
         accuracy = []
+
+        # Predicting the data and number of correct predictions to the corresponding text length bin.
         for i in range(0, len(count)):
             print(count[i])
             print([labels[label] for label in y_test[count[i]]])
@@ -93,16 +104,18 @@ class EvaluateModel:
                 new_predictions[i].append(a)
                 if new_predictions[i][j] == y_test[count[i][j]]:
                     true_positives[i] = true_positives[i] + 1
+
+            # Printing each bin of character length of text and the accuracy of that bin.
             print([labels[label] for label in new_predictions[i]])
-            print("Number of tweets of character length", objects[i], ":",  len(predictions[i]))
+            print("Number of tweets of character length", objects[i], ":", len(predictions[i]))
             accuracy.append(true_positives[i] / len(predictions[i]))
             print("Accuracy for tweet lengths", objects[i], "characters:", accuracy[i])
 
-        # --------------------------------------------------------------
         print()
 
         y_pos = np.arange(len(objects))
 
+        # Plotting each bin towards every bins' accuracy.
         performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6]]
 
         plt.bar(y_pos, performance, align='center', alpha=0.5)
@@ -113,7 +126,10 @@ class EvaluateModel:
         plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart.png')
         plt.close()
 
-    def plot_lang_bar(self, x_test, y_test, x_test_pad, labels):
+    # Saving three different plots that gives; the accuracy per language, the softmax output vector value of correctly
+    # predicted samples and the mean value of the softmax output vector value of correct prediction towards different
+    # lengths of texts.
+    def plot_lang_bar(self, x_test, y_test, x_test_pad):
 
         count_eng = []
         count_swe = []
@@ -124,6 +140,7 @@ class EvaluateModel:
         count_pol = []
         count_ser = []
 
+        # Dividing the data into lists for each language.
         for i in range(len(y_test)):
             if y_test[i] == 0:
                 count_eng.append(i)
@@ -154,9 +171,9 @@ class EvaluateModel:
         prediction_length = []
         tweet_dist = []
 
+        # Predicting and saving the number of correctly classified samples, the incorrectly classified samples, the
+        # length of the sample and the softmax output vector value for the samples, for each language.
         for i in range(0, len(count)):
-            #print(count[i])
-            #print([labels[label] for label in y_test[count[i]]])
             predictions[i] = self.model.predict(x_test_pad[count[i]])
             true_positives.append(0)
             mis_classifications.append(0)
@@ -174,29 +191,30 @@ class EvaluateModel:
                     tweet_dist.append(x_test[count[i][j]])
 
                 else:
-                    mis_classifications[i] = mis_classifications[i] +1
+                    mis_classifications[i] = mis_classifications[i] + 1
                     print("tweet:", x_test[count[i][j]], ": Real label:", y_test[count[i][j]], ": Predicted label:"
                           , new_predictions[i][j], predictions[i][j])
-            #print([labels[label] for label in new_predictions[i]])
-            print("Number of tweets of language", objects[i], ":",  len(predictions[i]))
+
+            # Printing the number of texts, correct classification and incorrect classification for each language.
+            print("Number of tweets of language", objects[i], ":", len(predictions[i]))
             accuracy.append(true_positives[i] / len(predictions[i]))
             print("Accuracy for", objects[i], ":", accuracy[i])
             print("Number of misclassifications:", mis_classifications[i])
             print("Number of correct classifications:", true_positives[i])
 
             print()
-        data_dist = {"Probability of prediction": value_prediction, "Tweet": tweet_dist, "Length of tweet": prediction_length}
+        data_dist = {"Probability of prediction": value_prediction, "Tweet": tweet_dist,
+                     "Length of tweet": prediction_length}
         distribution_probabilities = pd.DataFrame(data_dist)
-        #distribution_probabilities = distribution_probabilities.sort_values(by="Length of tweet")
         distribution_probabilities = distribution_probabilities.sort_values(by="Probability of prediction")
         print(distribution_probabilities)
-            # --------------------------------------------------------------
         print()
 
-
         y_pos = np.arange(len(objects))
-        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6], accuracy[7]]
+        performance = [accuracy[0], accuracy[1], accuracy[2], accuracy[3], accuracy[4], accuracy[5], accuracy[6],
+                       accuracy[7]]
 
+        # Plotting a bar chart of accuracy for each language.
         plt.bar(y_pos, performance, align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
         plt.ylabel('Accuracy')
@@ -205,9 +223,8 @@ class EvaluateModel:
         plt.savefig('/home/myuser/testTweet/LID/figures/bar_chart_languages.png')
         plt.close()
 
+        # Plotting the softmax output vector value of all correctly predicted samples, ordered.
         distribution_probabilities = distribution_probabilities.reset_index(drop=True)
-        #distribution_probabilities.plot(x="Length of tweet", y="Probability of prediction", logx=True, style='o')
-        #distribution_probabilities = distribution_probabilities.groupby('Length of tweet').mean()
         print(distribution_probabilities)
         plt.plot(distribution_probabilities.index, distribution_probabilities["Probability of prediction"], 'o')
         plt.xlabel('Index of sample (ordered)')
@@ -216,10 +233,10 @@ class EvaluateModel:
         plt.savefig("/home/myuser/testTweet/LID/figures/prob_correct.png")
         plt.close()
 
-        # distribution_probabilities.plot(x="Length of tweet", y="Probability of prediction", logx=True, style='o')
+        # Plotting the mean value of the softmax output vector value of correct prediction towards different lengths
+        # of texts.
         distribution_probabilities = distribution_probabilities.groupby('Length of tweet').mean()
         print(distribution_probabilities.index)
-        # plt.plot(distribution_probabilities['Length of tweet'], distribution_probabilities["Probability of prediction"], 'o')
         plt.plot(distribution_probabilities.index, distribution_probabilities["Probability of prediction"], 'o')
         plt.xlabel('Length of tweet')
         plt.ylabel('Probability from the softmax output vector')
@@ -227,9 +244,11 @@ class EvaluateModel:
         plt.savefig("/home/myuser/testTweet/LID/figures/distribution_prob.png")
         plt.close()
 
+    # Saving a plot of the softmax output vector value from all data of ONE language.
     def plot_language_dis(self, x_test, y_test, x_test_pad, labels):
         count_lang = []
 
+        # Here the language is chosen, the number after == corresponds to the chosen language.
         for i in range(len(y_test)):
             if y_test[i] == 7:
                 count_lang.append(i)
@@ -242,7 +261,8 @@ class EvaluateModel:
         prediction_length = []
         tweet_dist = []
 
-        predictions = self.model.predict(x_test_pad[count_lang]) #vector of probabilities of 8 languages
+        # Vector of probabilities of 8 languages
+        predictions = self.model.predict(x_test_pad[count_lang])
 
         for i in range(len(count_lang)):
             true_positives.append(0)
@@ -257,14 +277,9 @@ class EvaluateModel:
 
             if new_predictions[i] == y_test[count_lang[i]]:
                 true_positives[i] = true_positives[i] + 1
-
-                # value = predictions[i][new_predictions[i]]
-                # value_prediction.append(value)
-                # prediction_length.append(len(x_test[count_lang[i]]))
-
             else:
                 mis_classifications[i] = mis_classifications[i] + 1
-        #print("Tweet:", x_test[count_lang[0]], "prediction:", predictions[0], "max value:", new_predictions[0], value_prediction[0])
+
         print("Number of test samples for this languge:", len(value_prediction))
 
         data = {"proba": value_prediction}
@@ -272,27 +287,20 @@ class EvaluateModel:
         probabilities_correct = probabilities_correct.sort_values(by="proba")
         probabilities_correct = probabilities_correct.reset_index(drop=True)
 
-        # for i in range(len(value_prediction)):
-        #     if value_prediction[i] >= [0.9]:
-        #         #print("Proba's over 90%:", value_prediction[i], x_test[count_lang[i]])
-        #         print()
-        #
-        #     else:
-        #         print()
-        #         print("Proba's under 90%:", value_prediction[i], x_test[count_lang[i]])
-
+        # Plot of the softmax output vector value for every correctly classified sample for this one language
+        # in dataset.
         plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Maximum of prediction')
         plt.title('Serbian tweets.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Ser_9.png")
+        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Ser.png")
         plt.close()
 
-        #------ S-shaped plot --------
+        # Extracting the softmax output vector value for every sample in dataset for the one language.
         predictions_all = self.model.predict(x_test_pad)
         all_pred_lang = []
         for row in predictions_all:
-            all_pred_lang.append(row[7])
+            all_pred_lang.append(row[7])  # HERE again the number for the language needs to be changed.
         all_pred_lang.sort()
         all_pred = {"pred": all_pred_lang}
         tot = pd.DataFrame(all_pred)
@@ -307,10 +315,11 @@ class EvaluateModel:
         correct = pd.DataFrame(correct_data)
         print("Correctly classified samples for this langugae:", correct)
         print(tot)
+
+        # Plotting the softmax output vector value for every sample for one language, ordered.
         plt.plot(tot.index, tot["pred"], 'o')
-        #plt.plot(correct["index"], correct["proba"], 'om')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Value of prediction')
         plt.title('All outputs for the Serbian probability of all test data samples.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/9_languages/all_prob_Ser_index_9.png")
+        plt.savefig("/home/myuser/testTweet/LID/figures/9_languages/all_prob_Ser_index.png")
         plt.close()

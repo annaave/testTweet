@@ -5,9 +5,13 @@ from tensorflow.keras.layers import LSTM, Embedding, Bidirectional
 import tensorflow as tf
 
 
-# Class to create and train a Long-Short Term Memory machine learning model
 class TrainModel:
+
+    """A class that creates and train a Long short-term memery machine learning model through Keras. The class has
+    methods to load and keep train old models and save trained models."""
+
     def __init__(self, model_type, embedding_dim, class_names, bat_size, num_epochs, vocab_size):
+        # The LSTM model is here declared and created.
         try:
             if model_type == 'LSTM':
                 self.vocab_size = vocab_size
