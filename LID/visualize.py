@@ -4,6 +4,9 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
 
+""" Script that can be used to load history from a training of a machine learning model and plotting and saving 
+illustrative figures of the model. """
+
 
 def load_history(file_path):
     history = np.load(file_path, allow_pickle=True).item()

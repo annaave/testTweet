@@ -4,13 +4,11 @@ from LID.train_model import TrainModel
 from LID.evaluate import EvaluateModel
 from LID.visualize import load_history, plot_graphs, char_count, create_histogram, create_confusion, save_confusion
 from sklearn.metrics import confusion_matrix, classification_report
-import re
 import pickle
-import pandas as pd
 
 # class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Cro']
 class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser']
-# class_names = ['English', 'Swedish', 'Spanish', 'Portuguese', 'Russian', 'German', 'Polish', 'Serbian', 'Croatian']
+
 model_type = 'LSTM'
 voc_size = 300
 embedding_dim = 128
@@ -69,13 +67,6 @@ test_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/test_data.csv',
 lstm_evaluation = EvaluateModel(model_path, validation_data, test_data,)
 lstm_evaluation.evaluate_model()
 
-# norweigan_line_2 = "Jeg synes det er gøy med is"
-# swedish_line = "В Москве до смерти избили битами водителя. Дорожный конфликт.  Ад какой-то. Дикая страна"
-# norweigan_line = 'oj vad kul det ska bli, vi är bäst!'
-# norw_line = lstm_preprocess.tokenize_line(norweigan_line_2, tokenizer)
-# swe_line = lstm_preprocess.tokenize_line(swedish_line, tokenizer)
-# print(norweigan_line, ', prediction:', lstm_evaluation.predict_line(norw_line))
-# print(swedish_line, ', prediction:', lstm_evaluation.predict_line(swe_line))
 
 # print("Time to predict 8000 tweets for LSTM: ", lstm_evaluation.speed_test(), "seconds")
 
