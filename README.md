@@ -2,7 +2,7 @@
 
 A project that explores how to retrieve tweets through Twitter's API and use them to create and train a LSTM model and Facebook's fastText model. The project consists of 6 Python classes/files; getTweets.py, preprocess.py, train_model.py, evaluate.py, fasttext_2.py and visualize.py. The main file demonstrates how to use a couple of the classes and methods. 
 
-## getTweet.py 
+## getTweets.py 
 A Python file that uses the open source library tweepy to access tweets from its tweet identification number. A Twitter developer account is needed to get the credential to take use of Twitter's API.
 
 ## preprocess.py
