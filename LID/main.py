@@ -5,6 +5,7 @@ from LID.evaluate import EvaluateModel
 from LID.visualize import load_history, plot_graphs, char_count, create_histogram, create_confusion, save_confusion
 from sklearn.metrics import confusion_matrix, classification_report
 import pickle
+import re
 
 # class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser', 'Cro']
 class_names = ['Eng', 'Swe', 'Spa', 'Por', 'Rus', 'Ger', 'Pol', 'Ser']
@@ -62,7 +63,7 @@ history_path = '/home/myuser/testTweet/LID/saved_model/history_lstm_4000.npy'
 
 # ----- EVALUATE MODEL ------
 model_path = '/home/myuser/testTweet/LID/saved_model/lstm_model_4000'
-
+#
 test_data = lstm_preprocess.tokenize('/home/myuser/testTweet/LID/test_data.csv', tokenizer)
 lstm_evaluation = EvaluateModel(model_path, validation_data, test_data,)
 lstm_evaluation.evaluate_model()
@@ -74,12 +75,12 @@ lstm_evaluation.evaluate_model()
 # lstm_evaluation.plot_bar_chart(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
 #                                y_test=test_data['y_data'], labels=class_names)
 
-lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-                             y_test=test_data['y_data'])
+# lstm_evaluation.plot_lang_bar(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+#                              y_test=test_data['y_data'])
 #
 #
-# lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
-#                                   y_test=test_data['y_data'], labels=class_names)
+lstm_evaluation.plot_language_dis(x_test=test_data['x_data'], x_test_pad=test_data['x_data_pad'],
+                                  y_test=test_data['y_data'], labels=class_names)
 
 # y_pred = lstm_evaluation.predict_data()
 # y_actual = test_data["y_data"]

@@ -250,7 +250,7 @@ class EvaluateModel:
 
         # Here the language is chosen, the number after == corresponds to the chosen language.
         for i in range(len(y_test)):
-            if y_test[i] == 7:
+            if y_test[i] == 0:
                 count_lang.append(i)
 
         predictions = [[] for _ in range(len(count_lang))]
@@ -281,34 +281,37 @@ class EvaluateModel:
                 mis_classifications[i] = mis_classifications[i] + 1
 
         print("Number of test samples for this languge:", len(value_prediction))
-
+        cor_index = list(range(0, len(value_prediction)))
         data = {"proba": value_prediction}
         probabilities_correct = pd.DataFrame(data)
         probabilities_correct = probabilities_correct.sort_values(by="proba")
         probabilities_correct = probabilities_correct.reset_index(drop=True)
+        probabilities_correct.insert(loc=0, column='index', value=cor_index)
+        print(probabilities_correct)
 
         # Plot of the softmax output vector value for every correctly classified sample for this one language
         # in dataset.
-        plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
-        plt.xlabel('Index of sample (ordered)')
-        plt.ylabel('Maximum of prediction')
-        plt.title('Serbian tweets.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Ser.png")
-        plt.close()
+        # plt.plot(probabilities_correct.index, probabilities_correct["proba"], 'o')
+        # plt.xlabel('Index of sample (ordered)')
+        # plt.ylabel('Maximum of prediction')
+        # plt.title('Serbian tweets.')
+        # plt.savefig("/home/myuser/testTweet/LID/figures/all_classified_lang/prob_Ser.png")
+        # plt.close()
 
         # Extracting the softmax output vector value for every sample in dataset for the one language.
         predictions_all = self.model.predict(x_test_pad)
         all_pred_lang = []
         for row in predictions_all:
-            all_pred_lang.append(row[7])  # HERE again the number for the language needs to be changed.
+            all_pred_lang.append(row[0])  # HERE again the number for the language needs to be changed.
         all_pred_lang.sort()
-        all_pred = {"pred": all_pred_lang}
+        all_index = list(range(0, len(all_pred_lang)))
+        all_pred = {"index": all_index, "proba": all_pred_lang}
         tot = pd.DataFrame(all_pred)
         correct_index = []
         correct_values = []
         for i in range(len(tot)):
             for j in range(len(probabilities_correct)):
-                if tot["pred"][i] == probabilities_correct["proba"][j]:
+                if tot["proba"][i] == probabilities_correct["proba"][j]:
                     correct_index.append(i)
                     correct_values.append(probabilities_correct["proba"][j])
         correct_data = {"index": correct_index, "proba": correct_values}
@@ -316,10 +319,20 @@ class EvaluateModel:
         print("Correctly classified samples for this langugae:", correct)
         print(tot)
 
+        new_df = pd.concat([tot, correct]).drop_duplicates(subset=['index'], keep=False)
+        print(new_df)
+        new_df2 = pd.concat([tot, probabilities_correct])
+        new_df2.sort_values(by="proba")
+        new_df3 = pd.concat([tot, new_df2]).drop_duplicates(subset=['proba'], keep=False)
+        print(new_df3)
+
+
         # Plotting the softmax output vector value for every sample for one language, ordered.
-        plt.plot(tot.index, tot["pred"], 'o')
+        # plt.plot(tot.index, tot["proba"], 'o')
+        plt.plot(new_df['index'], new_df["proba"], 'o')
+        plt.plot(correct['index'], correct["proba"], 'rx')
         plt.xlabel('Index of sample (ordered)')
         plt.ylabel('Value of prediction')
-        plt.title('All outputs for the Serbian probability of all test data samples.')
-        plt.savefig("/home/myuser/testTweet/LID/figures/9_languages/all_prob_Ser_index.png")
+        plt.title('All outputs for the English probability of all test data samples.')
+        plt.savefig("/home/myuser/testTweet/LID/figures/8_languages_pres/all_prob_Eng_index.png")
         plt.close()
